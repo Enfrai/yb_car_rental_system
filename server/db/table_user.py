@@ -32,9 +32,46 @@ class UserTable:
             )
             '''
         db_helper.execute_non_query(sql)
-        
 
-    def insert(username: str, email: str, password: str, is_admin: bool, is_customer: bool) -> bool:
+    def update(self, user_id: int, username: str, email: str, password: str, is_admin: bool, is_customer: bool) -> bool:
+        '''
+        update user info by user_id
+        '''
+
+        cols = []
+        vals = ()
+        if not username:
+            cols.append(Columns.USERNAME + ' = ?')
+            vals += (username,)
+
+        if not email:
+            cols.append(Columns.EMAIL + ' = ?')
+            vals += (email,)
+
+        if not password:
+            cols.append(Columns.PASSWORD + ' = ?')
+            vals += (password,)
+
+        if not is_admin:
+            cols.append(Columns.IS_ADMIN + ' = ?')
+            vals += (is_admin,)
+
+        if not is_customer:
+            cols.append(Columns.IS_CUSTOMER + ' = ?')
+            vals += (is_customer,)
+
+        if len(cols) == 0:
+            return True
+        
+        sql = f'''
+            UPDATE {_TABLE_NAME} 
+            SET {", ".join(cols)}
+            WHERE {Columns.ID} = ?
+        '''
+        return db_helper.execute_non_query(sql, vals) == 0
+
+
+    def insert(self, username: str, email: str, password: str, is_admin: bool, is_customer: bool) -> bool:
         '''
         insert on record into user table
         '''
@@ -51,7 +88,7 @@ class UserTable:
         ret = db_helper.execute_non_query(sql, (username, password, email, is_admin, is_customer))
         return ret == 0
 
-    def exist(email: str = None, user_id: int = None) -> bool:
+    def exist(self, email: str = None, user_id: int = None) -> bool:
         '''
         To ensure if a user identified by email or user_id is exist.
         '''
@@ -74,7 +111,7 @@ class UserTable:
         list = db_helper.execute_query(sql, sql, values)
         return len(list) > 0
 
-    def search_by_id(user_id:int) -> dict:
+    def search_by_id(self, user_id:int) -> dict:
         '''
         To look for a user according to user id. And return all info as dictionary
         '''
@@ -92,7 +129,7 @@ class UserTable:
 
         return dict(list[0])
 
-    def search_by_email(email:str) -> dict:
+    def search_by_email(self, email:str) -> dict:
         '''
         To look for a user according to user id. And return all info as dictionary
         '''
@@ -110,7 +147,7 @@ class UserTable:
 
         return dict(list[0])
 
-    def search_by_email_and_password(email:str, password:str) -> dict:
+    def search_by_email_and_password(self, email:str, password:str) -> dict:
         '''
         To look for a user according to email & password. And return all info as dictionary
         '''

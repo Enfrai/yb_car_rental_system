@@ -1,1 +1,1 @@
-from .user import User, Role
+from .user import User, Role, str_to_role

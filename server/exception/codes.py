@@ -13,6 +13,8 @@ class ServErrorCode(Enum):
     UserNotExist = ("1003", "User not exist")
     UserInfoMissed = ("1004", "Necessary user info missed")
     UserRegFailed = ("1005", "User register failed")
+    UserInfoWrong = ("1006", "User info wrong")
+    UserInfoUpdateFailed = ("1007", "User info update failed")
     CarNotExist = ("2001", "Car not exist")
     CarInfoMissed = ("2002", "Necessary car information missed")
     OrderNotExist = ("3001", "Order not exist")

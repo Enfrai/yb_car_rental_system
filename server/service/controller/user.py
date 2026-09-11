@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 from service.model import User
 from lib import Response, HTTPResponse, exception_to_http_response
 from service.view import UserInfoData
-from service.model import Role
+from service.model import Role, str_to_role
 from exception import ServErrorCode
 from lib import email_is_valid
 
@@ -15,7 +15,64 @@ class UserRegisterRequest(UserLoginRequest):
     role: str = Field(...)
     auto_login: bool = Field(...)
 
+class UserUpdateRequest(UserRegisterRequest):
+    user_id: str = Field(...)
+
+class UserSearchRequest(BaseModel):
+    user_id: int = Field(...)
+
 class UserController:
+    def update(self, req: UserUpdateRequest) -> HTTPResponse:
+        '''
+        udpate user info, user_id is necessary.
+        '''
+        try: 
+            if not req.user_id:
+                return HTTPResponse(ServErrorCode.UserInfoMissed, "user_id is necessary but missed.")
+
+            user_id = int(req.user_id)
+
+            user = User()
+            user.username = req.username
+            user.email = req.email
+            user.password = req.password
+            user.role = str_to_role(req.role)
+
+            resp = user.update(req.user_id)
+            if resp.is_success():
+                s_req = UserSearchRequest()
+                s_req.user_id = user_id
+                resp = self.search(req)
+                return HTTPResponse(resp.code, resp.message, resp.detail, resp.data)
+
+            return HTTPResponse(resp.code, resp.message, resp.detail)
+        except ValueError:
+            return HTTPResponse(ServErrorCode.UserInfoWrong, "WRONG user_id is provided.")
+
+    def search(self, req: UserSearchRequest) -> HTTPResponse:
+        '''
+        search a user info by user_id
+        '''
+
+        try:
+            if not req.user_id:
+                return HTTPResponse(ServErrorCode.UserInfoMissed, "user_id is necessary but missed.")
+
+            user_id = int(req.user_id)
+            user = User()
+            resp = user.search_by_email_or_id(user_id=user_id)
+            data = None
+
+            if resp.is_success():
+                data = UserInfoData(user.user_id, user.username, user.email, 
+                                    user.role & Role.ADMIN.value != 0,
+                                    user.role & Role.CUSTOMER.value != 0)
+
+            return HTTPResponse(resp.code, resp.message, resp.detail, data)
+        except ValueError:
+            return HTTPResponse(ServErrorCode.UserInfoWrong, "WRONG user_id is provided.")
+
+
     def login(self, req: UserLoginRequest) -> HTTPResponse:
         user = User()
 
@@ -30,7 +87,7 @@ class UserController:
 
     def register(self, req: UserRegisterRequest) -> HTTPResponse:
         user = User()
-        resp = user.search_by_email(req.email)
+        resp = user.search_by_email_or_id(req.email)
         if not resp.is_success():
             return HTTPResponse(resp.code, resp.message, resp.detail)
 
@@ -55,7 +112,8 @@ class UserController:
 
         if len(req.password) <= 0:
             return HTTPResponse(ServErrorCode.UserRegFailed, 'WRONG password')
-        
+
+        user = User()
         resp = user.register(req.username, req.password, req.email, role)
         if resp.is_success():
             if req.auto_login:

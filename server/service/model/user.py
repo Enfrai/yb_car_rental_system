@@ -14,6 +14,9 @@ class Role(Enum):
     ADMIN = 0x1
     CUSTOMER = 0x10
 
+def str_to_role(r: str) -> Role:
+    return Role.ADMIN if r == 'admin' else Role.CUSTOMER if r == 'customer' else None
+
 class User:
     user_id: int
     username: str
@@ -23,6 +26,20 @@ class User:
 
     def __init__(self):
         pass
+
+    def update(self, user_id: int) -> Response:
+        '''
+        update user info by user_id
+        '''
+        user = UserTable()
+        success = user.update(user_id, self.username, self.email, 
+                    self.password, self.role & Role.ADMIN.value != 0, 
+                    self.role & Role.CUSTOMER.value != 0)
+
+        if not success:
+            return Response(ServErrorCode.UserInfoUpdateFailed, 'Update user info failed.')
+
+        return Response(ServErrorCode.Success)
 
     def register(self, username:str, password:str, email:str, role:int = 0) -> Response:
         '''
@@ -39,7 +56,7 @@ class User:
         user = UserTable()
 
         try:
-            success = user.insert(username, email, password, role & Role.ADMIN.value == 0, role & Role.CUSTOMER.value == 0)
+            success = user.insert(username, email, password, role & Role.ADMIN.value != 0, role & Role.CUSTOMER.value != 0)
             if not success:
                 return Response(ServErrorCode.UserRegFailed, "Register user failed.")
 
@@ -47,7 +64,7 @@ class User:
         except Exception as e:
             return exception_to_http_response(e)
 
-    def search_by_email(self, email:str, user_id: str) -> Response:
+    def search_by_email_or_id(self, email:str, user_id: str) -> Response:
         user = UserTable()
 
         try:

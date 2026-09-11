@@ -1,1 +1,1 @@
-from .user import UserController, UserLoginRequest, UserRegisterRequest
+from .user import UserController, UserLoginRequest, UserRegisterRequest, UserUpdateRequest, UserSearchRequest
