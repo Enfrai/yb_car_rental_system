@@ -66,10 +66,19 @@ async def user_search(req: controller.UserSearchRequest) -> HTTPResponse:
     '/order/book',
     status_code=status.HTTP_201_CREATED,
     response_model=HTTPResponse,
-    summary='user '
+    summary='Book an order'
 )
 async def booking_create_order(req: controller.BookingCarRequest) -> HTTPResponse:
     return controller.BookingController().book_a_car(req)
+
+@app.post(
+    '/order/all_for_users',
+    status_code=status.HTTP_201_CREATED,
+    response_model=HTTPResponse,
+    summary='search all orders for users (customer or admin)'
+)
+async def search_orders_for_users(req: controller.BookingHistoryRequest) -> HTTPResponse:
+    return controller.BookingController().search_orders_by_user(req)
 
 
 # ====================================

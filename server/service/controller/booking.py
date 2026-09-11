@@ -15,12 +15,62 @@ class BookingCarRequest(BaseModel):
     status: str = Field(...)
     create_time: str = Field(...)
     
+class BookingHistoryRequest(BaseModel):
+    customer_id: str = Field(...)
+    admin_id: str = Field(...)
 
 class BookingController:
     def __init__(self):
         pass
 
+    def search_orders_by_user(self, req: BookingHistoryRequest) -> HTTPResponse:
+        '''
+        search orders by user (customer or admin)
+        '''
+
+        if not req.admin_id and not req.customer_id:
+            r = Response(ServErrorCode.OrderSearchError, 'Missing specific user.')
+            return HTTPResponse(r.code, r.message, r.detail)
+
+        op = model.Book()
+        op.customer_id = req.customer_id
+        op.admin_id = req.admin_id
+        resp = op.search_with_conditions()
+        if isinstance(resp, Response):
+            return HTTPResponse(resp.code, resp.message, resp.detail)
+        elif not isinstance(resp, list):
+            r = Response(ServErrorCode.CommonError)
+            return HTTPResponse(r.code, r.message, r.detail)
+
+        all = []
+        for info in resp:
+            book_id = info.get(bt.Columns.ID, None)
+            customer_id = info.get(bt.Columns.CUSTOMER_ID, None)
+            admin_id = info.get(bt.Columns.ADMIN_ID, None)
+            car_id = info.get(bt.Columns.CAR_ID, None)
+            start_date = info.get(bt.Columns.START_DATE, None)
+            end_date = info.get(bt.Columns.END_DATE, None)
+            total_fee = info.get(bt.Columns.TOTAL_FEE, None)
+            status = info.get(bt.Columns.STATUS, None)
+            create_time = info.get(bt.Columns.CREATE_TIME, None)
+
+            data = view.BookInfoData().build(
+                book_id, customer_id, admin_id, car_id,
+                start_date, end_date, total_fee, 
+                model.booking_status_from_int(status) if status else None, 
+                create_time
+            )
+            all.append(data)
+
+        r = Response(ServErrorCode.Success)
+        return HTTPResponse(r.code, r.message, r.detail, data)
+            
+
     def book_a_car(self, req: BookingCarRequest) -> HTTPResponse:
+        '''
+        Book a car
+        '''
+
         try:
             booker = model.Book()
             booker.customer_id = int(req.customer_id) if req.customer_id else None

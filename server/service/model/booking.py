@@ -6,7 +6,7 @@ Booking model definition
 
 from db import table_booking as bt
 from exception import ServErrorCode
-from lib import Response, gen_unique_id
+from lib import Response, gen_unique_id, SortOrder
 
 # S_RESERVED = 'reserved'     # 0
 S_PENDDING = 'pendding'     # 1
@@ -94,16 +94,23 @@ class Book:
             return Response(ServErrorCode.OrderGenFailed)
 
     # =================================================================
-    def search_with_conditions(self) -> (Response | list[dict]):
+    def search_with_conditions(self, create_order: SortOrder) -> (Response | list[dict]):
         '''
         Search order with customized conditions
         '''
 
         op = bt.OrderTable()
         try:
+            order_by = None
+            if SortOrder.DESC == create_order:
+                order_by = f" ORDER BY {bt.Columns.CREATE_TIME} DESC"
+            elif SortOrder.ASC == create_order:
+                order_by = f" ORDER BY {bt.Columns.CREATE_TIME} ASC"
+
             all = op.search(self.customer_id, self.admin_id, self.book_id, self.status, 
                             extras=self.__dict__, 
-                            limit=self.limit)
+                            limit=self.limit,
+                            order_by=order_by)
             return all if all else []
         except Exception as e:
             return Response(ServErrorCode.CommonError)

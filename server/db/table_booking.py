@@ -178,7 +178,8 @@ class OrderTable:
             db_helper.rollback()
             return False
 
-    def search(self, customer_id:int, admin_id:int, order_id:int, order_status:int, extras:dict = None, limit:int = None) -> list[dict]:
+    def search(self, customer_id:int, admin_id:int, order_id:int, order_status:int, 
+               extras:dict = None, limit:int = None, order_by: str = None) -> list[dict]:
         '''
         To look up a customer's orders.
         '''
@@ -227,12 +228,16 @@ class OrderTable:
                 condition.append(Columns.CREATE_TIME + " = ?")
                 values += (create_date,)
 
-        if len(condition) == 0: 
-            raise OrderError(ServErrorCode.OrderInfoMissed, "Must provide necessary conditions while invoking search() from OrderTable.")
-
         sql = f'''
-            SELECT * FROM {_TABLE_NAME} WHERE {" AND ".join(condition)}
+            SELECT * FROM {_TABLE_NAME} 
         '''
+
+        if len(condition) > 0:
+            sql += f' WHERE {" AND ".join(condition)} '
+
+        if not order_by:
+            sql += order_by
+
         list = db_helper.execute_query(sql, values)
         ret = []
         for row in list:

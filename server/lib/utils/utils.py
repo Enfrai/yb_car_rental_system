@@ -1,5 +1,10 @@
 import re
 import time
+from enum import Enum
+
+class SortOrder(Enum):
+    DESC = 'DESC'
+    ASC = 'ASC'
 
 def email_is_valid(email: str) -> bool:
     if not email:

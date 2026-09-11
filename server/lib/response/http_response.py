@@ -27,11 +27,22 @@ class HTTPResponse(Response):
 
 def exception_to_http_response(e: Exception) -> HTTPResponse:
     d = dict(f'{e}')
-    code = d['code']
-    message = d['message']
-    detail = d['detail']
+    code = d.get('code', None)
+    message = d.get('message', None)
+    detail = d.get('detail', None)
     return HTTPResponse(
         code if code else '',
         message if message else '',
-        detail if detail else '',
+        detail if detail else d,
+    )
+
+def exception_to_response(e: Exception) -> Response:
+    d = dict(f'{e}')
+    code = d.get('code', None)
+    message = d.get('message', None)
+    detail = d.get('detail', None)
+    return Response(
+        code if code else '',
+        message if message else '',
+        detail if detail else d,
     )
