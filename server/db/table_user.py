@@ -76,7 +76,7 @@ class UserTable:
         insert on record into user table
         '''
 
-        if username is None or email is None or password is None or is_admin is None or is_customer is None:
+        if not username or not email or not password or not is_admin is None or is_customer is None:
             raise UserError(ServErrorCode.UserInfoMissed, 'Info missed while registering a user.')
 
         sql = f'''

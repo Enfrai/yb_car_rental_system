@@ -1,5 +1,5 @@
 '''
-User services definition
+User model definition
 @author shuohui liu
 @date 10 Sep 2026
 '''
@@ -32,14 +32,18 @@ class User:
         update user info by user_id
         '''
         user = UserTable()
-        success = user.update(user_id, self.username, self.email, 
-                    self.password, self.role & Role.ADMIN.value != 0, 
-                    self.role & Role.CUSTOMER.value != 0)
+        try:
+            success = user.update(user_id, self.username, self.email, 
+                        self.password, self.role & Role.ADMIN.value != 0, 
+                        self.role & Role.CUSTOMER.value != 0)
 
-        if not success:
-            return Response(ServErrorCode.UserInfoUpdateFailed, 'Update user info failed.')
+            if not success:
+                return Response(ServErrorCode.UserInfoUpdateFailed, 'Update user info failed.')
 
-        return Response(ServErrorCode.Success)
+            return Response(ServErrorCode.Success)
+        except Exception as e:
+            return exception_to_http_response(e)
+
 
     def register(self, username:str, password:str, email:str, role:int = 0) -> Response:
         '''

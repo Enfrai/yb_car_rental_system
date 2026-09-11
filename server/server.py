@@ -1,6 +1,7 @@
 import uvicorn
 from fastapi import FastAPI, HTTPException, status
 from service.view import UserInfoData
+from service import view
 from service import controller
 from lib import HTTPResponse
 
@@ -74,6 +75,14 @@ async def booking_create_order() -> HTTPResponse:
 # ====================================
 # ========= car management ===========
 # ====================================
+@app.post(
+    '/car/register',
+    status_code=status.HTTP_201_CREATED,
+    response_model=HTTPResponse,
+    summary='Register a car '
+)
+async def car_register(req: controller.CarRegisterRequest) -> HTTPResponse:
+    pass
 
 
 if __name__ == '__main__':

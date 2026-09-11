@@ -55,11 +55,11 @@ class OrderTable:
         columns = []
         values = ()
 
-        if info is None or book_id is None:
+        if not info or not book_id:
             raise OrderError(ServErrorCode.OrderInfoMissed, 'Order info is missed while booking a car.')
         
         admin_id = info.get(Columns.ADMIN_ID, None)
-        if admin_id is not None:
+        if not admin_id:
             columns.append(f'{Columns.ADMIN_ID}=?')
             values += (admin_id,)
 
@@ -69,22 +69,22 @@ class OrderTable:
             values += (status,)
 
         car_id = info.get(Columns.CAR_ID, None)
-        if car_id is not None:
+        if not car_id:
             columns.append(f'{Columns.CAR_ID}=?')
             values += (car_id,)
 
         start_date = info.get(Columns.START_DATE, None)
-        if start_date is not None:
+        if not start_date:
             columns.append(f'{Columns.START_DATE}=?')
             values += (start_date,)
 
         end_date = info.get(Columns.END_DATE, None)
-        if end_date is not None:
+        if not end_date:
             columns.append(f'{Columns.END_DATE}=?')
             values += (end_date,)
 
         total_fee = info.get(Columns.TOTAL_FEE, None)
-        if total_fee is not None:
+        if not total_fee:
             columns.append(f'{Columns.TOTAL_FEE}=?')
             values += (total_fee,)
 
@@ -109,16 +109,16 @@ class OrderTable:
         columns = []
         values = ()
 
-        if info is None:
+        if not info:
             raise OrderError(ServErrorCode.OrderInfoMissed, 'Order info is missed while booking a car.')
         
         customer_id = info.get(Columns.CUSTOMER_ID, None)
-        if customer_id is not None:
+        if not customer_id:
             columns.append(f'{Columns.CUSTOMER_ID}')
             values += (customer_id,)
         
         admin_id = info.get(Columns.ADMIN_ID, None)
-        if admin_id is not None:
+        if not admin_id:
             columns.append(f'{Columns.ADMIN_ID}')
             values += (admin_id,)
 
@@ -128,30 +128,27 @@ class OrderTable:
             values += (status,)
 
         car_id = info.get(Columns.CAR_ID, None)
-        if car_id is not None:
+        if not car_id:
             columns.append(f'{Columns.CAR_ID}')
             values += (car_id,)
 
         start_date = info.get(Columns.START_DATE, None)
-        if start_date is not None:
+        if not start_date:
             columns.append(f'{Columns.START_DATE}')
             values += (start_date,)
 
         end_date = info.get(Columns.END_DATE, None)
-        if end_date is not None:
+        if not end_date:
             columns.append(f'{Columns.END_DATE}')
             values += (end_date,)
 
         total_fee = info.get(Columns.TOTAL_FEE, None)
-        if total_fee is not None:
+        if not total_fee:
             columns.append(f'{Columns.TOTAL_FEE}')
             values += (total_fee,)
 
         if len(columns) == 0:
             raise OrderError(ServErrorCode.OrderInfoMissed, 'No info provided while generating an order.')
-
-        if customer_id is None or car_id is None or start_date is None or end_date is None or total_fee is None:
-            raise OrderError(ServErrorCode.OrderInfoMissed, 'Necessary info is missed while generating an order.')
 
         sql = f'''
             INSERT INTO {_TABLE_NAME} 

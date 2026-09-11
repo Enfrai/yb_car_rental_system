@@ -11,6 +11,7 @@ from exception.car_error import CarError
 
 class Columns(Enum):
     ID = "car_id"
+    USER_ID = 'user_id'
     MAKE = "make"
     MODEL = "model"
     YEAR = "year"
@@ -33,6 +34,7 @@ class CarTable:
         sql = f'''
             CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (
                 {Columns.ID} INTEGER PRIMARY KEY AUTOINCREMENT,
+                {Columns.USER_ID} INTEGER NOT NULL,
                 {Columns.MAKE} CHAR(128) NOT NULL,
                 {Columns.MODEL} CHAR(128) NOT NULL,
                 {Columns.YEAR} INTEGER NOT NULL,
@@ -53,7 +55,7 @@ class CarTable:
         columns = []
         values = ()
 
-        if car is None or car_id is None:
+        if not car or not car_id:
             raise CarError(ServErrorCode.CarInfoMissed, 'Car info is missed while updating a car.')
         
         mileage = car.get(Columns.MILEAGE, None)
@@ -97,6 +99,7 @@ class CarTable:
         car_checked = False
 
         if car is not None:
+            user_id = car.get(Columns.USER_ID, None)
             make = car.get(Columns.MAKE, None)
             model = car.get(Columns.MODEL, None)
             year = car.get(Columns.YEAR, None)
@@ -105,7 +108,8 @@ class CarTable:
             min_rent_period = car.get(Columns.MIN_RENT_PERIOD, 1)
             max_rent_period = car.get(Columns.MAX_RENT_PERIOD, 0)
 
-            car_checked = make is not None and model is not None and year is not None and mileage is not None and register is not None
+            car_checked = not user_id and not make and not model and not year and not mileage and not register \
+                and not min_rent_period and not max_rent_period
 
         if not car_checked:
             raise CarError(ServErrorCode, 'Car necessary info missed while registering a car.')
@@ -125,7 +129,7 @@ class CarTable:
         To check if one car is exist.
         '''
 
-        if car_id is None: 
+        if not car_id: 
             raise DBExeError(ServErrorCode.ExecuteError, "Must provide car_id while invoking exist() from CarTable.")
 
         sql = f'''
@@ -139,16 +143,36 @@ class CarTable:
         To look up a car's information.
         '''
 
-        if car_id is None: 
+        if not car_id: 
             raise DBExeError("Must provide car_id while invoking exist() from CarTable.")
 
         sql = f'''
             SELECT * FROM {_TABLE_NAME} WHERE {Columns.ID} = ?
         '''
-        list = db_helper.execute_query(sql, (car_id))
+        list = db_helper.execute_query(sql, (car_id,))
         if len(list) == 0:
             raise CarError(ServErrorCode.CarNotExist, 'Car undefined.')
 
         return dict(list[0])
+    
+    def search_for_users(self, user_id:int, order:str) -> list[dict]:
+        '''
+        To look up a car's information.
+        '''
+
+        if user_id is None: 
+            raise DBExeError("Must provide car_id while invoking exist() from CarTable.")
+
+        order_by = order if order else ''
+
+        sql = f'''
+            SELECT * FROM {_TABLE_NAME} WHERE {Columns.USER_ID} = ? {order_by}
+        '''
+        list = db_helper.execute_query(sql, (user_id,))
+        ret = []
+        for row in list:
+            ret.append(dict(row))
+
+        return ret
 
         
