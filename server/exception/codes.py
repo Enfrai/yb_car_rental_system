@@ -25,6 +25,7 @@ class ServErrorCode(Enum):
     OrderInfoMissed = ("3002", "Necessary order info missed")
     OrderGenFailed = ("3003", "Book an order failed")
     OrderSearchError = ("3004", "Searching with missed info")
+    OrderConfirmError = ("3005", "Order confirm failed")
 
 
 def wrap_code(code: ServErrorCode) -> tuple:

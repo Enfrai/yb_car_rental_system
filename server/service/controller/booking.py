@@ -20,13 +20,41 @@ class BookingHistoryRequest(BaseModel):
     admin_id: str = Field(...)
 
 class BookingConfirmRequest(BaseModel):
-    customer_id: str = Field(...)
-
+    order_id: str = Field(...)
+    user_id: str = Field(...)
+    status: str = Field(...)
 
 
 class BookingController:
     def __init__(self):
         pass
+
+    def confirm_order(self, req: BookingConfirmRequest) -> HTTPResponse:
+        '''
+        Confirm an order'''
+
+        if not req.order_id:
+            r = Response(ServErrorCode.OrderInfoMissed, 'Missing necessary order id.')
+            return HTTPResponse(r.code, r.message, r.detail)
+
+        status = model.booking_status_from_str(status)
+        if not status:
+            r = Response(ServErrorCode.OrderInfoMissed, 'Wrong status.')
+            return HTTPResponse(r.code, r.message, r.detail)
+        
+        op = bt.OrderTable()
+        success = op.update(req.order_id, {
+            bt.Columns.STATUS: status,
+            bt.Columns.ADMIN_ID: req.user_id,
+        })
+
+        if not success:
+            r = Response(ServErrorCode.OrderConfirmError, 'Confirm failed.')
+            return HTTPResponse(r.code, r.message, r.detail)
+
+        r = Response(ServErrorCode.Success)
+        return HTTPResponse(r.code, r.message, r.detail)
+        
 
     def search_orders_by_user(self, req: BookingHistoryRequest) -> HTTPResponse:
         '''

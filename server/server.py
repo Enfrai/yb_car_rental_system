@@ -86,8 +86,8 @@ async def search_orders_for_users(req: controller.BookingHistoryRequest) -> HTTP
     response_model=HTTPResponse,
     summary='Confirm an order'
 )
-async def search_orders_for_users(req: controller.BookingHistoryRequest) -> HTTPResponse:
-    return controller.BookingController().search_orders_by_user(req)
+async def search_orders_for_users(req: controller.BookingConfirmRequest) -> HTTPResponse:
+    return controller.BookingController().confirm_order(req)
 
 
 # ====================================
