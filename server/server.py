@@ -63,15 +63,13 @@ async def user_search(req: controller.UserSearchRequest) -> HTTPResponse:
 # ============ booking ===============
 # ====================================
 @app.post(
-    '/booking/create_order',
+    '/order/book',
     status_code=status.HTTP_201_CREATED,
     response_model=HTTPResponse,
     summary='user '
 )
-async def booking_create_order() -> HTTPResponse:
-    pass
-
-
+async def booking_create_order(req: controller.BookingCarRequest) -> HTTPResponse:
+    return controller.BookingController().book_a_car(req)
 
 
 # ====================================

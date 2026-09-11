@@ -1,4 +1,5 @@
 import re
+import time
 
 def email_is_valid(email: str) -> bool:
     if not email:
@@ -9,3 +10,6 @@ def email_is_valid(email: str) -> bool:
 
 def safe_string(v:str, default:str = '') -> str:
     return v if v else default
+
+def gen_unique_id() -> int:
+    return time.time_ns()

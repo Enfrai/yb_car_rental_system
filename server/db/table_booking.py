@@ -21,6 +21,7 @@ _TABLE_NAME = "booking"
 
 class Columns(Enum):
     ID = "book_id"
+    UID = "u_book_id"
     CUSTOMER_ID = "customer_id"
     ADMIN_ID = "admin_id"
     CAR_ID = "car_id"
@@ -35,6 +36,7 @@ class OrderTable:
         sql = f'''
             CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (
                 {Columns.ID} INTEGER PRIMARY KEY AUTOINCREMENT,
+                {Columns.UID} INTEGER NOT NULL,
                 {Columns.CUSTOMER_ID} INTEGER NOT NULL,
                 {Columns.ADMIN_ID} INTEGER,
                 {Columns.CAR_ID} INTEGER NOT NULL,
@@ -118,6 +120,11 @@ class OrderTable:
         if not info:
             raise OrderError(ServErrorCode.OrderInfoMissed, 'Order info is missed while booking a car.')
         
+        uid = info.get(Columns.UID, None)
+        if not uid:
+            columns.append(f'{Columns.UID}')
+            values += (uid,)
+        
         customer_id = info.get(Columns.CUSTOMER_ID, None)
         if not customer_id:
             columns.append(f'{Columns.CUSTOMER_ID}')
@@ -171,7 +178,7 @@ class OrderTable:
             db_helper.rollback()
             return False
 
-    def search(self, customer_id:int, admin_id:int, order_id:int, order_status:int) -> list:
+    def search(self, customer_id:int, admin_id:int, order_id:int, order_status:int, extras:dict = None, limit:int = None) -> list[dict]:
         '''
         To look up a customer's orders.
         '''
@@ -193,6 +200,32 @@ class OrderTable:
         if order_status is not None:
             condition.append(Columns.STATUS + " = ?")
             values += (order_status,)
+
+        if extras:
+            book_uid = extras.get(Columns.UID, None)
+            if book_uid:
+                condition.append(Columns.UID + " = ?")
+                values += (book_uid,)
+
+            car_id = extras.get(Columns.CAR_ID, None)
+            if car_id:
+                condition.append(Columns.CAR_ID + " = ?")
+                values += (car_id,)
+
+            start_date = extras.get(Columns.START_DATE, None)
+            if start_date:
+                condition.append(Columns.START_DATE + " = ?")
+                values += (start_date,)
+
+            end_date = extras.get(Columns.END_DATE, None)
+            if end_date:
+                condition.append(Columns.END_DATE + " = ?")
+                values += (end_date,)
+
+            create_date = extras.get(Columns.CREATE_TIME, None)
+            if create_date:
+                condition.append(Columns.CREATE_TIME + " = ?")
+                values += (create_date,)
 
         if len(condition) == 0: 
             raise OrderError(ServErrorCode.OrderInfoMissed, "Must provide necessary conditions while invoking search() from OrderTable.")
