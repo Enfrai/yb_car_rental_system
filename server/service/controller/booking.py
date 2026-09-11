@@ -2,7 +2,8 @@ from pydantic import BaseModel, Field
 from lib import Response, HTTPResponse, exception_to_http_response
 from service import model, view, controller
 from exception import ServErrorCode
-from db import table_booking as bt, table_car as ct
+from db import table_booking as bt, table_car as ct, table_user as ut
+import random
 
 class BookingCarRequest(BaseModel):
     customer_id: str = Field(...)
@@ -20,6 +21,7 @@ class BookingHistoryRequest(BaseModel):
 
 class BookingConfirmRequest(BaseModel):
     customer_id: str = Field(...)
+
 
 
 class BookingController:
@@ -99,6 +101,19 @@ class BookingController:
         booker.total_fee = req.total_fee
         booker.status = model.booking_status_from_str(req.status)
 
+        # make a admin_id to this order
+        if not booker.admin_id:
+            op = ut.UserTable()
+            users = op.search_all_users(is_admin=True)
+            if len(users) == 0:
+                r = Response(ServErrorCode.UserNoAdminExist)
+                return HTTPResponse(r.code, r.message, r.detail)
+            
+            seed = random.randrange(0, len(users))
+            user = users[seed]
+            booker.admin_id = user.get(ut.Columns.ID)
+
+        # continue to book process
         resp = booker.book_a_car()
         if not resp.is_success():
             r = Response(ServErrorCode.OrderGenFailed)

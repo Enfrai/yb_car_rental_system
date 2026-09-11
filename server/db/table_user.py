@@ -141,6 +141,33 @@ class UserTable:
 
         return dict(list[0])
 
+    def search_all_users(self, is_admin: bool = False, is_customer: bool = False) -> list[dict]:
+        '''
+        To search all users by user role
+        ''' 
+        sql = f'''
+            SELECT * FROM {_TABLE_NAME} 
+        '''
+        conditions = []
+        values = ()
+        if is_admin:
+            conditions.append(f' {Columns.IS_ADMIN} = ? ')
+            values += (True, )
+
+        if is_customer:
+            conditions.append(f' {Columns.IS_CUSTOMER} = ? ')
+            values += (True, )
+
+        if len(conditions) > 0:
+            sql += f' WHERE {' AND '.join(conditions)}'
+
+        rows = db_helper.execute_query(sql, values)
+        ret = []
+        for r in rows:
+            ret.append(dict(r))
+
+        return ret
+
     def search_by_email(self, email:str) -> dict:
         '''
         To look for a user according to user id. And return all info as dictionary
