@@ -6,7 +6,7 @@ Booking model definition
 
 from db import table_booking as bt
 from exception import ServErrorCode
-from lib import Response, gen_unique_id, SortOrder
+from lib import Response, gen_unique_id, SortOrder, error_to_response
 
 # S_RESERVED = 'reserved'     # 0
 S_PENDDING = 'pendding'     # 1
@@ -70,7 +70,7 @@ class Book:
         if not self.customer_id or not self.admin_id or not self.car_id \
               or not self.start_date <= 0 or not self.end_date \
               or (not self.total_fee and self.total_fee > 0) or not self.status:
-            return Response(ServErrorCode.CarInfoMissed, "Missed necessary info while registering a car.")
+            return error_to_response(ServErrorCode.CarInfoMissed, "Missed necessary info while registering a car.")
 
         op = bt.OrderTable
         try:
@@ -87,12 +87,12 @@ class Book:
             })
 
             if not success:
-                return Response(ServErrorCode.OrderGenFailed)
+                return error_to_response(ServErrorCode.OrderGenFailed)
 
             self.book_uid = book_uid
-            return Response(ServErrorCode.Success)
+            return error_to_response(ServErrorCode.Success)
         except Exception as e:
-            return Response(ServErrorCode.OrderGenFailed)
+            return error_to_response(ServErrorCode.OrderGenFailed)
 
     # =================================================================
     def search_with_conditions(self, create_order: SortOrder) -> (Response | list[dict]):
@@ -115,7 +115,7 @@ class Book:
                             order_by=order_by)
             return all if all else []
         except Exception as e:
-            return Response(ServErrorCode.CommonError)
+            return error_to_response(ServErrorCode.CommonError)
 
     
     # =================================================================
@@ -148,7 +148,7 @@ class Book:
                             extras=None)
             return all if all else []
         except Exception as e:
-            return Response(ServErrorCode.CommonError)
+            return error_to_response(ServErrorCode.CommonError)
 
     #===========================
     def where_status_in(self, *args) -> str:

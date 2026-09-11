@@ -4,7 +4,7 @@ User model definition
 @date 10 Sep 2026
 '''
 
-from lib import Response
+from lib import Response, error_to_response
 from db import UserTable, Columns
 from lib import email_is_valid
 from exception import ServErrorCode
@@ -38,11 +38,11 @@ class User:
                         self.role & Role.CUSTOMER.value != 0)
 
             if not success:
-                return Response(ServErrorCode.UserInfoUpdateFailed, 'Update user info failed.')
+                return error_to_response(ServErrorCode.UserInfoUpdateFailed, 'Update user info failed.')
 
-            return Response(ServErrorCode.Success)
+            return error_to_response(ServErrorCode.Success)
         except Exception as e:
-            return Response(ServErrorCode.UserInfoUpdateFailed, 'Update user info failed.')
+            return error_to_response(ServErrorCode.UserInfoUpdateFailed, 'Update user info failed.')
 
 
     def register(self, username:str, password:str, email:str, role:int = 0) -> Response:
@@ -51,7 +51,7 @@ class User:
         '''
 
         if not username or not password or not email or role == 0 or not email_is_valid(email):
-            return Response(ServErrorCode.UserInfoMissed, "Have missed info to login.")
+            return error_to_response(ServErrorCode.UserInfoMissed, "Have missed info to login.")
 
         self.username = username
         self.password = password
@@ -62,11 +62,11 @@ class User:
         try:
             success = user.insert(username, email, password, role & Role.ADMIN.value != 0, role & Role.CUSTOMER.value != 0)
             if not success:
-                return Response(ServErrorCode.UserRegFailed, "Register user failed.")
+                return error_to_response(ServErrorCode.UserRegFailed, "Register user failed.")
 
-            return Response(ServErrorCode.Success)
+            return error_to_response(ServErrorCode.Success)
         except Exception as e:
-            return Response(ServErrorCode.UserRegFailed, "Register user failed.")
+            return error_to_response(ServErrorCode.UserRegFailed, "Register user failed.")
 
     def search_by_email_or_id(self, email:str = None, user_id: str = None) -> Response:
         user = UserTable()
@@ -78,7 +78,7 @@ class User:
             elif email:
                 resp = user.search_by_email(email)
             else:
-                return Response(ServErrorCode.UserInfoMissed)
+                return error_to_response(ServErrorCode.UserInfoMissed)
 
             self.user_id = resp[Columns.ID]
             self.username = resp[Columns.USERNAME]
@@ -93,9 +93,9 @@ class User:
             if is_customer:
                 self.role |= Role.CUSTOMER.value
 
-            return Response(ServErrorCode.Success)
+            return error_to_response(ServErrorCode.Success)
         except Exception as e:
-            return Response(ServErrorCode.CommonError)
+            return error_to_response(ServErrorCode.CommonError)
 
     def login(self, email:str, password:str) -> Response:
         '''
@@ -104,7 +104,7 @@ class User:
         '''
 
         if not email or not password or not email_is_valid(email):
-            return Response(ServErrorCode.UserInfoMissed, "WRONG login info.")
+            return error_to_response(ServErrorCode.UserInfoMissed, "WRONG login info.")
 
         user = UserTable()
 
@@ -113,7 +113,7 @@ class User:
 
             self.user_id = dict.get(Columns.ID, None)
             if not self.user_id:
-                return Response(ServErrorCode.UserNotExist, "Login Failed.")
+                return error_to_response(ServErrorCode.UserNotExist, "Login Failed.")
 
             self.username = dict[Columns.USERNAME]
 
@@ -126,7 +126,7 @@ class User:
             if is_customer:
                 self.role |= Role.CUSTOMER.value
 
-            return Response(ServErrorCode.Success)
+            return error_to_response(ServErrorCode.Success)
         except Exception as e:
-            return Response(ServErrorCode.CommonError)
+            return error_to_response(ServErrorCode.CommonError)
 

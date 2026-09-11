@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from lib import Response, HTTPResponse, exception_to_http_response
+from lib import Response, HTTPResponse, exception_to_http_response, error_to_response, error_to_http_response
 from service import model, view, controller
 from exception import ServErrorCode
 from db import table_booking as bt, table_car as ct, table_user as ut
@@ -34,13 +34,11 @@ class BookingController:
         Confirm an order'''
 
         if not req.order_id:
-            r = Response(ServErrorCode.OrderInfoMissed, 'Missing necessary order id.')
-            return HTTPResponse(r.code, r.message, r.detail)
+            return error_to_http_response(ServErrorCode.OrderInfoMissed, 'Missing necessary order id.')
 
         status = model.booking_status_from_str(status)
         if not status:
-            r = Response(ServErrorCode.OrderInfoMissed, 'Wrong status.')
-            return HTTPResponse(r.code, r.message, r.detail)
+            return error_to_http_response(ServErrorCode.OrderInfoMissed, 'Wrong status.')
         
         op = bt.OrderTable()
         success = op.update(req.order_id, {
@@ -49,12 +47,9 @@ class BookingController:
         })
 
         if not success:
-            r = Response(ServErrorCode.OrderConfirmError, 'Confirm failed.')
-            return HTTPResponse(r.code, r.message, r.detail)
+            return error_to_http_response(ServErrorCode.OrderConfirmError, 'Confirm failed.')
 
-        r = Response(ServErrorCode.Success)
-        return HTTPResponse(r.code, r.message, r.detail)
-        
+        return error_to_http_response(ServErrorCode.Success)
 
     def search_orders_by_user(self, req: BookingHistoryRequest) -> HTTPResponse:
         '''
@@ -62,8 +57,7 @@ class BookingController:
         '''
 
         if not req.admin_id and not req.customer_id:
-            r = Response(ServErrorCode.OrderSearchError, 'Missing specific user.')
-            return HTTPResponse(r.code, r.message, r.detail)
+            return error_to_http_response(ServErrorCode.OrderSearchError, 'Missing specific user.')
 
         op = model.Book()
         op.customer_id = req.customer_id
@@ -72,8 +66,7 @@ class BookingController:
         if isinstance(resp, Response):
             return HTTPResponse(resp.code, resp.message, resp.detail)
         elif not isinstance(resp, list):
-            r = Response(ServErrorCode.CommonError)
-            return HTTPResponse(r.code, r.message, r.detail)
+            return error_to_http_response(ServErrorCode.CommonError)
 
         all = []
         for info in resp:
@@ -95,8 +88,7 @@ class BookingController:
             )
             all.append(data)
 
-        r = Response(ServErrorCode.Success)
-        return HTTPResponse(r.code, r.message, r.detail, data)
+        return error_to_http_response(ServErrorCode.Success)
             
 
     def book_a_car(self, req: BookingCarRequest) -> HTTPResponse:
@@ -111,13 +103,11 @@ class BookingController:
         if isinstance(resp, Response):
             return HTTPResponse(resp.code, resp.message, resp.detail)
         elif not isinstance(resp, list):
-            r = Response(ServErrorCode.CommonError)
-            return HTTPResponse(r.code, r.message, r.detail)
+            return error_to_http_response(ServErrorCode.CommonError)
 
         can_book = len(resp) > 0
         if not can_book:
-            r = Response(ServErrorCode.OrderGenFailed, 'Having in-process orders')
-            return HTTPResponse(r.code, r.message, r.detail)
+            return error_to_http_response(ServErrorCode.OrderGenFailed, 'Having in-process orders')
 
         # book action
         booker = model.Book()
@@ -134,8 +124,7 @@ class BookingController:
             op = ut.UserTable()
             users = op.search_all_users(is_admin=True)
             if len(users) == 0:
-                r = Response(ServErrorCode.UserNoAdminExist)
-                return HTTPResponse(r.code, r.message, r.detail)
+                return error_to_http_response(ServErrorCode.UserNoAdminExist)
             
             seed = random.randrange(0, len(users))
             user = users[seed]
@@ -144,8 +133,7 @@ class BookingController:
         # continue to book process
         resp = booker.book_a_car()
         if not resp.is_success():
-            r = Response(ServErrorCode.OrderGenFailed)
-            return HTTPResponse(r.code, r.message, r.detail)
+            return error_to_http_response(ServErrorCode.OrderGenFailed)
 
         # search order info
         book_uid = booker.book_uid
@@ -175,11 +163,9 @@ class BookingController:
                 })
 
                 if not success:
-                    r = Response(ServErrorCode.CommonError, 'Error while sync PENDDING status to car table.')
-                    return HTTPResponse(r.code, r.message, r.detail)
+                    return error_to_http_response(ServErrorCode.CommonError, 'Error while sync PENDDING status to car table.')
             except Exception as e:
-                r = Response(ServErrorCode.CommonError, f'{e}')
-                return HTTPResponse(r.code, r.message, r.detail)
+                return error_to_http_response(ServErrorCode.CommonError, f'{e}')
 
             # continue to response to client
             data = view.BookInfoData().build(
@@ -188,8 +174,6 @@ class BookingController:
                 model.booking_status_from_int(status) if status else None, 
                 create_time
             )
-            r = Response(ServErrorCode.Success)
-            return HTTPResponse(r.code, r.message, r.detail, data)
+            return error_to_http_response(ServErrorCode.Success)
         else:
-            r = Response(ServErrorCode.OrderGenFailed)
-            return HTTPResponse(r.code, r.message, r.detail)
+            return error_to_http_response(ServErrorCode.OrderGenFailed)

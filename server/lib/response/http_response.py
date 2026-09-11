@@ -6,6 +6,7 @@ HTTP response definition, used to do data response from FE to BE
 
 from .response import Response
 from .data import Data
+from exception import ServErrorCode, wrap_code
 
 class HTTPResponse(Response):
     data: Data = None
@@ -46,3 +47,7 @@ def exception_to_response(e: Exception) -> Response:
         message if message else '',
         detail if detail else d,
     )
+
+def error_to_http_response(error: ServErrorCode, detail: str = '') -> HTTPResponse:
+    code, message = wrap_code(error)
+    return HTTPResponse(code, message, detail, None)

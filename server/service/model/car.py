@@ -6,7 +6,7 @@ Car model definition
 
 from db import table_car as car
 from exception import ServErrorCode
-from lib import Response
+from lib import Response, error_to_response
 
 S_VALID = 'available'   # 0
 S_IN_RENT = 'in_rent'     # 1
@@ -63,7 +63,7 @@ class Car:
             all = op.search_with_coditions(self.__dict__, self.limit)
             return all if all else []
         except Exception as e:
-            return Response(ServErrorCode.CommonError)
+            return error_to_response(ServErrorCode.CommonError)
 
 
     def search_by_id(self, car_id: int) -> Response:
@@ -72,13 +72,13 @@ class Car:
         '''
 
         if not car_id or car_id < 0:
-            return Response(ServErrorCode.CarInfoMissed, "Missed necessary info while searching a car.")
+            return error_to_response(ServErrorCode.CarInfoMissed, "Missed necessary info while searching a car.")
 
         op = car.CarTable()
         try:
             this_car = op.search(car_id)
             if not this_car:
-                return Response(ServErrorCode.CarRegisterFailed, 'Not find the registered car.')
+                return error_to_response(ServErrorCode.CarRegisterFailed, 'Not find the registered car.')
             
             self.car_id = car_id
             self.user_id = this_car[car.Columns.USER_ID]
@@ -89,13 +89,13 @@ class Car:
             self.rent_status = this_car[car.Columns.STATUS]
             self.min_rent_period = this_car[car.Columns.MIN_RENT_PERIOD]
             self.max_rent_period = this_car[car.Columns.MAX_RENT_PERIOD]
-            return Response(ServErrorCode.Success)
+            return error_to_response(ServErrorCode.Success)
         except Exception as e:
-            return Response(ServErrorCode.CommonError)
+            return error_to_response(ServErrorCode.CommonError)
 
     def search_for_user(self, user_id: int, limit:int) -> (Response | list[dict]):
         if not user_id or user_id < 0:
-            return Response(ServErrorCode.CarInfoMissed, 'Invalid user id')
+            return error_to_response(ServErrorCode.CarInfoMissed, 'Invalid user id')
 
         op = car.CarTable()
         self.user_id = user_id
@@ -103,7 +103,7 @@ class Car:
             all = op.search_for_users(self.user_id, order=f"ORDER BY {car.Columns.REGISTER} DESC {"LIMIT " + limit if not limit and limit > 0 else ""}")
             return all
         except Exception as e:
-            return Response(ServErrorCode.CommonError)
+            return error_to_response(ServErrorCode.CommonError)
 
     def register(self) -> Response:
         '''
@@ -115,7 +115,7 @@ class Car:
               or not self.min_rent_period or self.min_rent_period <= 0 \
               or not self.max_rent_period or self.max_rent_period < 0 or \
                 (self.max_rent_period > 0 and self.min_rent_period > self.max_rent_period):
-            return Response(ServErrorCode.CarInfoMissed, "Missed necessary info while registering a car.")
+            return error_to_response(ServErrorCode.CarInfoMissed, "Missed necessary info while registering a car.")
 
         op = car.CarTable()
         try:
@@ -131,11 +131,11 @@ class Car:
             })
 
             if not success:
-                return Response(ServErrorCode.CarRegisterFailed)
+                return error_to_response(ServErrorCode.CarRegisterFailed)
 
-            return Response(ServErrorCode.Success)
+            return error_to_response(ServErrorCode.Success)
         except Exception as e:
-            return Response(ServErrorCode.CarRegisterFailed)
+            return error_to_response(ServErrorCode.CarRegisterFailed)
 
         
 

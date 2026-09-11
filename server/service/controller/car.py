@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from lib import Response, HTTPResponse, exception_to_http_response
+from lib import Response, HTTPResponse, exception_to_http_response, error_to_http_response
 from service import model, view
 from exception import ServErrorCode
 from db import table_car as ct
@@ -46,14 +46,11 @@ class CarController:
                         car.car_id, car.user_id, car.make, car.model, car.year, car.mileage, car.rent_status, car.min_rent_period, car.max_rent_period
                     )
                     all.append(one)
-                r = Response(ServErrorCode.Success)
-                return HTTPResponse(r.code, r.message, r.detail, view.CarInfoList().build(all))
+                return error_to_http_response(ServErrorCode.Success)
             else:
-                r = Response(ServErrorCode.CommonError, 'Search error')
-                return HTTPResponse(r.code, r.message, r.detail)
+                return error_to_http_response(ServErrorCode.CommonError, 'Search error')
         except ValueError:
-            r = Response(ServErrorCode.CommonError, 'Invalid id')
-            return HTTPResponse(r.code, r.message, r.detail)
+            return error_to_http_response(ServErrorCode.CommonError, 'Invalid id')
 
     def register(self, req: CarRegisterRequest) -> HTTPResponse:
         '''
@@ -80,14 +77,12 @@ class CarController:
             return HTTPResponse(resp.code, resp.message, resp.detail)
         elif isinstance(resp, list):
             if len(list) == 0:
-                r = Response(ServErrorCode.CarRegisterFailed, "Car registers failed.")
-                return HTTPResponse(r.code, r.message, r.detail)
+                return exception_to_http_response(ServErrorCode.CarRegisterFailed, "Car registers failed.")
             else:
                 info = list[0]
                 car_id = info.get(ct.Columns.ID, None)
                 if not car_id:
-                    r = Response(ServErrorCode.CarRegisterFailed, "Car registers failed for car id not defined.")
-                    return HTTPResponse(r.code, r.message, r.detail)
+                    return error_to_http_response(ServErrorCode.CarRegisterFailed, "Car registers failed for car id not defined.")
                 
                 data = view.CarIdData(car_id)
                 return HTTPResponse(resp.code, resp.message, resp.detail, data)

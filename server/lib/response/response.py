@@ -15,12 +15,13 @@ class Response(BaseModel):
     def is_success(self) -> bool:
         return ServErrorCode.Success.value[0] == self.code
 
-    def __init__(self, code:ServErrorCode, detail:str = ""):
-        serv_code = wrap_code(code)
-        print(f'serv_code: {serv_code}')
-        
+    def __init__(self, code: str, message: str = '', detail: str = ""):
         super().__init__(
-            code=serv_code[0],
-            message=serv_code[1],
+            code=code,
+            message=message,
             detail=detail,
         )
+
+def error_to_response(error: ServErrorCode, detail: str = '') -> Response:
+    code, message = wrap_code(error)
+    return Response(code, message, detail)
