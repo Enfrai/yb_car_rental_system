@@ -5,7 +5,7 @@ from exception import ServErrorCode
 from db import table_car as ct
 
 class CarRegisterRequest(BaseModel):
-    user_id: int = Field(...)
+    user_id: str = Field(...)
     make: str = Field(...)
     model: str = Field(...)
     year: int = Field(...)
@@ -14,11 +14,48 @@ class CarRegisterRequest(BaseModel):
     min_rent_period: int = Field(...)
     max_rent_period: int = Field(...)
 
+class CarSearchReuest(CarRegisterRequest):
+    limit: int = Field(...)
+    car_id: str = Field(...)
+
 class CarController:
     def __init__(self):
         pass
 
-    def register(req: CarRegisterRequest) -> HTTPResponse:
+    def search(self, req: CarSearchReuest) -> HTTPResponse:
+        '''
+        Search cars by customized conditions
+        '''
+        try:
+            car = model.Car()
+            car.car_id = int(req.car_id) if req.car_id else None
+            car.user_id = int(req.user_id) if req.user_id else None
+            car.make = req.make
+            car.model = req.model
+            car.year = req.year
+            car.mileage = req.mileage
+            car.rent_status = req.rent_status
+
+            resp = car.search_with_conditions()
+            if isinstance(resp, Response):
+                return HTTPResponse(resp.code, resp.message, resp.detail)
+            elif isinstance(resp, list):
+                all = []
+                for e in resp:
+                    one = view.CarInfoData().build(
+                        car.car_id, car.user_id, car.make, car.model, car.year, car.mileage, car.rent_status, car.min_rent_period, car.max_rent_period
+                    )
+                    all.append(one)
+                r = Response(ServErrorCode.Success)
+                return HTTPResponse(r.code, r.message, r.detail, view.CarInfoList().build(all))
+            else:
+                r = Response(ServErrorCode.CommonError, 'Search error')
+                return HTTPResponse(r.code, r.message, r.detail)
+        except ValueError:
+            r = Response(ServErrorCode.CommonError, 'Invalid id')
+            return HTTPResponse(r.code, r.message, r.detail)
+
+    def register(self, req: CarRegisterRequest) -> HTTPResponse:
         '''
         Register a car
         '''

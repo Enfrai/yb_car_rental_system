@@ -68,7 +68,13 @@ class UserTable:
             SET {", ".join(cols)}
             WHERE {Columns.ID} = ?
         '''
-        return db_helper.execute_non_query(sql, vals) == 0
+        if db_helper.execute_non_query(sql, vals) == 0:
+            # True
+            db_helper.commit()
+            return True
+        else:
+            db_helper.rollback()
+            return False
 
 
     def insert(self, username: str, email: str, password: str, is_admin: bool, is_customer: bool) -> bool:
@@ -86,7 +92,13 @@ class UserTable:
                 (?, ?, ?, ?, ?)
             '''
         ret = db_helper.execute_non_query(sql, (username, password, email, is_admin, is_customer))
-        return ret == 0
+        if ret == 0:
+            # True
+            db_helper.commit()
+            return True
+        else:
+            db_helper.rollback
+            return False
 
     def exist(self, email: str = None, user_id: int = None) -> bool:
         '''

@@ -98,7 +98,13 @@ class OrderTable:
             WHERE {Columns.ID} =?
         '''
         ret = db_helper.execute_non_query(sql, values)
-        return ret == 0
+        if ret == 0:
+            # True
+            db_helper.commit()
+            return True
+        else:
+            db_helper.rollback()
+            return False
 
 
     def book(self, info: dict) -> bool: 
@@ -157,7 +163,13 @@ class OrderTable:
             ({", ".join(["?" * len(columns)])})
         '''
         ret = db_helper.execute_non_query(sql, values)
-        return ret == 0
+        if ret == 0:
+            # True
+            db_helper.commit()
+            return True
+        else:
+            db_helper.rollback()
+            return False
 
     def search(self, customer_id:int, admin_id:int, order_id:int, order_status:int) -> list:
         '''

@@ -60,7 +60,12 @@ class DBHelper:
         '''
         close database
         '''
-        self._db.close()
+        if self._db:
+            self._db.close()
+            self._db = None
 
 # for outside
 db_helper = DBHelper()
+
+def close_database():
+    db_helper.close()

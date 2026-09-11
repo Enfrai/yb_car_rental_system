@@ -34,6 +34,12 @@ class Database:
         execute update/insert/delete/create table statement'''
         pass
 
+    def rollback(self):
+        '''
+        execute rollback
+        '''
+        pass
+
     def commit(self):
         '''
         execute database commit'''

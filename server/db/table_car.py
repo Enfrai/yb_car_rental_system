@@ -88,7 +88,13 @@ class CarTable:
             WHERE {Columns.ID} =?
         '''
         ret = db_helper.execute_non_query(sql, values)
-        return ret == 0
+        if ret == 0:
+            # True
+            db_helper.commit()
+            return True
+        else:
+            db_helper.rollback
+            return False
 
 
     def register(self, car: dict) -> bool: 
@@ -98,7 +104,7 @@ class CarTable:
 
         car_checked = False
 
-        if car is not None:
+        if car:
             user_id = car.get(Columns.USER_ID, None)
             make = car.get(Columns.MAKE, None)
             model = car.get(Columns.MODEL, None)
@@ -121,7 +127,13 @@ class CarTable:
             (?, ?, ?, ?, ?, ?, ?)
         '''
         ret = db_helper.execute_non_query(sql, (make, model, year, mileage, register, min_rent_period, max_rent_period))
-        return ret == 0
+        if ret == 0:
+            # True
+            db_helper.commit()
+            return True
+        else:
+            db_helper.rollback
+            return False
 
 
     def exist(self, car_id:int) -> bool:
@@ -174,5 +186,64 @@ class CarTable:
             ret.append(dict(row))
 
         return ret
+
+    def search_with_coditions(self, con: dict, limit: int) -> list[dict]:
+        car_id = con.get(Columns.ID, None)
+        user_id = con.get(Columns.USER_ID, None)
+        make = con.get(Columns.MAKE, None)
+        model = con.get(Columns.MODEL, None)
+        year = con.get(Columns.YEAR, None)
+        mileage = con.get(Columns.MILEAGE, None)
+        rent_status = con.get(Columns.STATUS, None)
+
+        conditions = []
+        values = ()
+
+        if not car_id and car_id > 0:
+            conditions.append(f'{Columns.ID} = ?')
+            values = (car_id,)
+
+        if not user_id and user_id > 0:
+            conditions.append(f'{Columns.USER_ID} = ?')
+            values += (user_id,)
+
+        if not make:
+            conditions.append(f'{Columns.MAKE} = ?')
+            values += (make,)
+
+        if not model:
+            conditions.append(f'{Columns.MODEL} = ?')
+            values += (model,)
+
+        if not year and year > 0:
+            conditions.append(f'{Columns.YEAR} = ?')
+            values += (year,)
+
+        if not mileage:
+            if mileage < 0:
+                conditions.append(f'{Columns.MILEAGE} >= ?')
+                values += (-mileage,)
+            elif mileage > 0:
+                conditions.append(f'{Columns.MILEAGE} <= ?')
+                values += (mileage,)
+
+        if not rent_status and rent_status > 0:
+            conditions.append(f'{Columns.STATUS} = ?')
+            values += (rent_status,)
+
+        sql = f'''
+            SELECT * FROM {_TABLE_NAME}
+        '''
+        if len(conditions) > 0:
+            sql += f' WHERE {" AND ".join(conditions)}'
+
+        if not limit and limit > 0:
+            sql += f' LIMIT {limit}'
+
+        ret_list = []
+        for row in db_helper.execute_query(sql, values):
+            ret_list.append(dict(row))
+
+        return ret_list
 
         

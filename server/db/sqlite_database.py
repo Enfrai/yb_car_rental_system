@@ -31,6 +31,12 @@ class SQLiteDatabase(Database):
         cursor = self.connection.cursor()
         cursor.execute(query, params)
 
+    def rollback(self):
+        '''
+        execute to rollback all modifications
+        '''
+        self.connection.rollback()
+
     def commit(self):
         '''
         execute database commit'''

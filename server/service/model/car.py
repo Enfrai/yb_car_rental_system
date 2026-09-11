@@ -48,9 +48,23 @@ class Car:
     rent_status: int
     min_rent_period: int
     max_rent_period: int
+    limit: int
 
     def __init__(self):
         pass
+
+    def search_with_conditions(self) -> (Response | list[dict]):
+        '''
+        Search cars with customized conditions
+        '''
+
+        op = car.CarTable()
+        try:
+            all = op.search_with_coditions(self.__dict__, self.limit)
+            return all if all else []
+        except Exception as e:
+            return exception_to_http_response(e)
+
 
     def search_by_id(self, car_id: int) -> Response:
         '''

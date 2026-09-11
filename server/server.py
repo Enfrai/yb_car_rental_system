@@ -4,6 +4,8 @@ from service.view import UserInfoData
 from service import view
 from service import controller
 from lib import HTTPResponse
+from notification import NotificationCenter
+from service import model
 
 app = FastAPI(title='Car Retal System')
 
@@ -82,8 +84,28 @@ async def booking_create_order() -> HTTPResponse:
     summary='Register a car '
 )
 async def car_register(req: controller.CarRegisterRequest) -> HTTPResponse:
-    pass
+    return controller.CarController().register(req)
+
+@app.post(
+    '/car/search',
+    status_code=status.HTTP_201_CREATED,
+    response_model=HTTPResponse,
+    summary='Search cars'
+)
+async def car_search(req: controller.CarSearchReuest) -> HTTPResponse:
+    return controller.CarController().search(req)
 
 
 if __name__ == '__main__':
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    notification_center = (
+        NotificationCenter()
+        .register(model.OnDBExitNotification())
+        .register(model.OnDBExceptionNotification())
+    )
+
+    try:
+        uvicorn.run(app, host="127.0.0.1", port=8000)
+    except Exception as e:
+        notification_center.notify_exception()
+    finally:
+        notification_center.notify_exit()
