@@ -180,11 +180,11 @@ class UserTable:
             SELECT * FROM {_TABLE_NAME} WHERE {Columns.EMAIL} = ?
         '''
 
-        list = db_helper.execute_query(sql, sql, (email,))
-        if len(list) == 0:
+        rows = db_helper.execute_query(sql, (email,))
+        if len(rows) == 0:
             raise UserError(ServErrorCode.UserNotExist, 'User undefined')
 
-        return dict(list[0])
+        return dict(rows[0])
 
     def search_by_email_and_password(self, email:str, password:str) -> dict:
         '''
@@ -198,9 +198,9 @@ class UserTable:
             SELECT * FROM {_TABLE_NAME} WHERE {Columns.EMAIL} = ? AND {Columns.PASSWORD} = ?
         '''
 
-        list = db_helper.execute_query(sql, sql, (email, password))
-        if len(list) == 0:
+        rows = db_helper.execute_query(sql, (email, password))
+        if len(rows) == 0:
             raise UserError(ServErrorCode.UserNotExist, 'No matched user by email and password.')
 
-        return dict(list[0])
+        return dict(rows[0])
 

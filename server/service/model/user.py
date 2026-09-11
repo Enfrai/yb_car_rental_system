@@ -85,11 +85,11 @@ class User:
             self.email = resp[Columns.EMAIL]
 
             self.role = 0
-            is_admin = dict[Columns.IS_ADMIN]
+            is_admin = resp[Columns.IS_ADMIN]
             if is_admin:
                 self.role |= Role.ADMIN.value
 
-            is_customer = dict[Columns.IS_CUSTOMER]
+            is_customer = resp[Columns.IS_CUSTOMER]
             if is_customer:
                 self.role |= Role.CUSTOMER.value
 

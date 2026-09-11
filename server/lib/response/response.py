@@ -19,6 +19,8 @@ class Response(BaseModel):
         serv_code = wrap_code(code)
         print(f'serv_code: {serv_code}')
         
-        self.code = serv_code[0]
-        self.message = serv_code[1]
-        self.detail = detail
+        super().__init__(
+            code=serv_code[0],
+            message=serv_code[1],
+            detail=detail,
+        )
