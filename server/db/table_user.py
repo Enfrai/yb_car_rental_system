@@ -24,7 +24,7 @@ class UserTable:
         sql = f'''
             CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (
                 {Columns.ID} INTEGER PRIMARY KEY AUTOINCREMENT,
-                {Columns.USER_NAME} CHAR(64) NOT NULL,
+                {Columns.USERNAME} CHAR(64) NOT NULL,
                 {Columns.PASSWORD} CHAR(128) NOT NULL,
                 {Columns.EMAIL} CHAR(128) NOT NULL,
                 {Columns.IS_ADMIN} BOOLEAN NOT NULL,
@@ -177,7 +177,7 @@ class UserTable:
             raise DBExeError(ServErrorCode.ExecuteError, "Must provide user_id while invoking search_by_id().")
 
         sql = f'''
-            SELECT * FROM {_TABLE_NAME} WHERE {Columns.email} = ?
+            SELECT * FROM {_TABLE_NAME} WHERE {Columns.EMAIL} = ?
         '''
 
         list = db_helper.execute_query(sql, sql, (email,))

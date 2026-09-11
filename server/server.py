@@ -1,5 +1,6 @@
 import uvicorn
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from service.view import UserInfoData
 from service import view
 from service import controller
@@ -8,6 +9,17 @@ from notification import NotificationCenter
 from service import model
 
 app = FastAPI(title='Car Retal System')
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+    ],
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 # ============== test root ================
 

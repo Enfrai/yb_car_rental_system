@@ -1,40 +1,23 @@
-import { useState } from 'react'
-import './App.css'
+import './App.css';
+import { UserProvider } from './UserContext';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import HomePage from './pages/HomePage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
+import { PathUserLogin, PathUserRegister } from './Config';
 
 function App() {
-  const handleLogin = () => {
-
-  }
-
-  const handleRegister = () => {
-
-  }
-
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-
   return (
-      <section id="center">
-        <div style={{ margin: '0px 24px' }}>
-          <h1>Welcome to Automate Rental System</h1>
-        </div>
-        <button
-          style={{ width: '180px', justifyContent: 'center', alignItems: 'center', marginTop: '124px' }}
-          type="button"
-          className="counter"
-          onClick={handleLogin}
-        >
-          Login
-        </button>
-        <button
-          style={{ width: '180px', justifyContent: 'center', alignItems: 'center' }}
-          type="button"
-          className="counter"
-          onClick={handleRegister}
-        >
-          Register
-        </button>
-      </section>
-  )
+    <UserProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path={PathUserLogin} element={<LoginPage />} />
+          <Route path={PathUserRegister} element={<RegisterPage />} />
+        </Routes>
+      </BrowserRouter>
+    </UserProvider>
+  );
 }
 
 export default App

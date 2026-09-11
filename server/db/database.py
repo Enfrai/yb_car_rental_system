@@ -23,13 +23,13 @@ class Database:
         '''
         pass
 
-    def execute_query(self, query: str, params: tuple) -> list:
+    def execute_query(self, query: str, params: tuple = None) -> list:
         '''
         execute select statement
         '''
         pass
 
-    def execute_non_query(self, query: str, params: tuple):
+    def execute_non_query(self, query: str, params: tuple = None):
         '''
         execute update/insert/delete/create table statement'''
         pass

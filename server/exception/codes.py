@@ -32,4 +32,4 @@ def wrap_code(code: ServErrorCode) -> tuple:
     if not code: 
         return None
 
-    return (f'-{code.value[0]}', code.value[1])
+    return (f'{code.value[0]}', code.value[1])

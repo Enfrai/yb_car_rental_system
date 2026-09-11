@@ -68,7 +68,7 @@ class User:
         except Exception as e:
             return Response(ServErrorCode.UserRegFailed, "Register user failed.")
 
-    def search_by_email_or_id(self, email:str, user_id: str) -> Response:
+    def search_by_email_or_id(self, email:str = None, user_id: str = None) -> Response:
         user = UserTable()
 
         try:

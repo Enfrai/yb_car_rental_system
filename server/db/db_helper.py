@@ -33,7 +33,7 @@ class DBHelper:
                     cls._instance = super().__new__(cls)
         return cls._instance
 
-    def execute_query(self, query: str, params: tuple) -> list:
+    def execute_query(self, query: str, params: tuple = None) -> list:
         '''
         execute select statement
         '''
@@ -42,7 +42,7 @@ class DBHelper:
         except:
             return []
 
-    def execute_non_query(self, query: str, params: tuple) -> int:
+    def execute_non_query(self, query: str, params: tuple = None) -> int:
         '''
         execute update/insert/delete/create table statement'''
         try:
