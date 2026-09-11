@@ -48,6 +48,8 @@ class UserController:
             return HTTPResponse(resp.code, resp.message, resp.detail)
         except ValueError:
             return HTTPResponse(ServErrorCode.UserInfoWrong, "WRONG user_id is provided.")
+        except Exception as e:
+            return exception_to_http_response(e)
 
     def search(self, req: UserSearchRequest) -> HTTPResponse:
         '''
@@ -71,19 +73,24 @@ class UserController:
             return HTTPResponse(resp.code, resp.message, resp.detail, data)
         except ValueError:
             return HTTPResponse(ServErrorCode.UserInfoWrong, "WRONG user_id is provided.")
+        except Exception as e:
+            return exception_to_http_response(e)
 
 
     def login(self, req: UserLoginRequest) -> HTTPResponse:
         user = User()
 
-        resp = user.login(req.email, req.password)
-        if resp.is_success():
-            role = user.role
-            data = UserInfoData(user.user_id, user.username, user.email, 
-                                None if not role else role & Role.ADMIN != 0, 
-                                None if not role else role & Role.CUSTOMER != 0)
+        try:
+            resp = user.login(req.email, req.password)
+            if resp.is_success():
+                role = user.role
+                data = UserInfoData(user.user_id, user.username, user.email, 
+                                    None if not role else role & Role.ADMIN != 0, 
+                                    None if not role else role & Role.CUSTOMER != 0)
 
-        return HTTPResponse(resp.code, resp.message, resp.detail, data)
+            return HTTPResponse(resp.code, resp.message, resp.detail, data)
+        except Exception as e:
+            return exception_to_http_response(e)
 
     def register(self, req: UserRegisterRequest) -> HTTPResponse:
         user = User()
@@ -114,6 +121,7 @@ class UserController:
             return HTTPResponse(ServErrorCode.UserRegFailed, 'WRONG password')
 
         user = User()
+        
         resp = user.register(req.username, req.password, req.email, role)
         if resp.is_success():
             if req.auto_login:

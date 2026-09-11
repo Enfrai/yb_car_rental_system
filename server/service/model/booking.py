@@ -6,7 +6,7 @@ Booking model definition
 
 from db import table_booking as bt
 from exception import ServErrorCode
-from lib import Response, exception_to_http_response, gen_unique_id
+from lib import Response, gen_unique_id
 
 # S_RESERVED = 'reserved'     # 0
 S_PENDDING = 'pendding'     # 1
@@ -86,12 +86,12 @@ class Book:
             })
 
             if not success:
-                return Response(ServErrorCode.CarRegisterFailed)
+                return Response(ServErrorCode.OrderGenFailed)
 
             self.book_uid = book_uid
             return Response(ServErrorCode.Success)
         except Exception as e:
-            return exception_to_http_response(e)
+            return Response(ServErrorCode.OrderGenFailed)
 
     # =================================================================
     def search_with_conditions(self) -> (Response | list[dict]):
@@ -106,7 +106,7 @@ class Book:
                             limit=self.limit)
             return all if all else []
         except Exception as e:
-            return exception_to_http_response(e)
+            return Response(ServErrorCode.CommonError)
 
     #===========================
 
@@ -136,7 +136,7 @@ class Book:
             self.max_rent_period = this_car[car.Columns.MAX_RENT_PERIOD]
             return Response(ServErrorCode.Success)
         except Exception as e:
-            return exception_to_http_response(e)
+            return Response(ServErrorCode.CommonError)
 
     def search_for_user(self, user_id: int, limit:int) -> (Response | list[dict]):
         if not user_id or user_id < 0:
@@ -148,6 +148,6 @@ class Book:
             all = op.search_for_users(self.user_id, order=f"ORDER BY {car.Columns.REGISTER} DESC {"LIMIT " + limit if not limit and limit > 0 else ""}")
             return all
         except Exception as e:
-            return exception_to_http_response(e)
+            return Response(ServErrorCode.CommonError)
 
         

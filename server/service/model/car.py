@@ -6,7 +6,7 @@ Car model definition
 
 from db import table_car as car
 from exception import ServErrorCode
-from lib import Response, exception_to_http_response
+from lib import Response
 
 S_VALID = 'available'   # 0
 S_IN_RENT = 'in_rent'     # 1
@@ -63,7 +63,7 @@ class Car:
             all = op.search_with_coditions(self.__dict__, self.limit)
             return all if all else []
         except Exception as e:
-            return exception_to_http_response(e)
+            return Response(ServErrorCode.CommonError)
 
 
     def search_by_id(self, car_id: int) -> Response:
@@ -91,7 +91,7 @@ class Car:
             self.max_rent_period = this_car[car.Columns.MAX_RENT_PERIOD]
             return Response(ServErrorCode.Success)
         except Exception as e:
-            return exception_to_http_response(e)
+            return Response(ServErrorCode.CommonError)
 
     def search_for_user(self, user_id: int, limit:int) -> (Response | list[dict]):
         if not user_id or user_id < 0:
@@ -103,7 +103,7 @@ class Car:
             all = op.search_for_users(self.user_id, order=f"ORDER BY {car.Columns.REGISTER} DESC {"LIMIT " + limit if not limit and limit > 0 else ""}")
             return all
         except Exception as e:
-            return exception_to_http_response(e)
+            return Response(ServErrorCode.CommonError)
 
     def register(self) -> Response:
         '''
@@ -135,7 +135,7 @@ class Car:
 
             return Response(ServErrorCode.Success)
         except Exception as e:
-            return exception_to_http_response(e)
+            return Response(ServErrorCode.CarRegisterFailed)
 
         
 

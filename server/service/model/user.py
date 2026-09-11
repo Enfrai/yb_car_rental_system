@@ -4,7 +4,7 @@ User model definition
 @date 10 Sep 2026
 '''
 
-from lib import Response, exception_to_http_response
+from lib import Response
 from db import UserTable, Columns
 from lib import email_is_valid
 from exception import ServErrorCode
@@ -42,7 +42,7 @@ class User:
 
             return Response(ServErrorCode.Success)
         except Exception as e:
-            return exception_to_http_response(e)
+            return Response(ServErrorCode.UserInfoUpdateFailed, 'Update user info failed.')
 
 
     def register(self, username:str, password:str, email:str, role:int = 0) -> Response:
@@ -66,7 +66,7 @@ class User:
 
             return Response(ServErrorCode.Success)
         except Exception as e:
-            return exception_to_http_response(e)
+            return Response(ServErrorCode.UserRegFailed, "Register user failed.")
 
     def search_by_email_or_id(self, email:str, user_id: str) -> Response:
         user = UserTable()
@@ -95,7 +95,7 @@ class User:
 
             return Response(ServErrorCode.Success)
         except Exception as e:
-            return exception_to_http_response(e)
+            return Response(ServErrorCode.CommonError)
 
     def login(self, email:str, password:str) -> Response:
         '''
@@ -128,5 +128,5 @@ class User:
 
             return Response(ServErrorCode.Success)
         except Exception as e:
-            return exception_to_http_response(e)
+            return Response(ServErrorCode.CommonError)
 
