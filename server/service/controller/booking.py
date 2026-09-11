@@ -2,8 +2,7 @@ from pydantic import BaseModel, Field
 from lib import Response, HTTPResponse, exception_to_http_response
 from service import model, view, controller
 from exception import ServErrorCode
-from db import table_booking as bt
-
+from db import table_booking as bt, table_car as ct
 
 class BookingCarRequest(BaseModel):
     customer_id: str = Field(...)
@@ -18,6 +17,10 @@ class BookingCarRequest(BaseModel):
 class BookingHistoryRequest(BaseModel):
     customer_id: str = Field(...)
     admin_id: str = Field(...)
+
+class BookingConfirmRequest(BaseModel):
+    customer_id: str = Field(...)
+
 
 class BookingController:
     def __init__(self):
@@ -121,6 +124,21 @@ class BookingController:
             status = info.get(bt.Columns.STATUS, None)
             create_time = info.get(bt.Columns.CREATE_TIME, None)
 
+            # sync car status to car table
+            car = ct.CarTable()
+            try:
+                success = car.update(car_id, {
+                    ct.Columns.STATUS: ct.Status.PENDDING,
+                })
+
+                if not success:
+                    r = Response(ServErrorCode.CommonError, 'Error while sync PENDDING status to car table.')
+                    return HTTPResponse(r.code, r.message, r.detail)
+            except Exception as e:
+                r = Response(ServErrorCode.CommonError, f'{e}')
+                return HTTPResponse(r.code, r.message, r.detail)
+
+            # continue to response to client
             data = view.BookInfoData().build(
                 book_id, customer_id, admin_id, car_id,
                 start_date, end_date, total_fee, 

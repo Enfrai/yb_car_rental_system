@@ -80,6 +80,15 @@ async def booking_create_order(req: controller.BookingCarRequest) -> HTTPRespons
 async def search_orders_for_users(req: controller.BookingHistoryRequest) -> HTTPResponse:
     return controller.BookingController().search_orders_by_user(req)
 
+@app.post(
+    '/order/confirm',
+    status_code=status.HTTP_201_CREATED,
+    response_model=HTTPResponse,
+    summary='Confirm an order'
+)
+async def search_orders_for_users(req: controller.BookingHistoryRequest) -> HTTPResponse:
+    return controller.BookingController().search_orders_by_user(req)
+
 
 # ====================================
 # ========= car management ===========
