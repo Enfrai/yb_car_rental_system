@@ -56,6 +56,7 @@ class Book:
     status: int
     create_time: str
     limit: int
+    where: str
 
     def __init__(self):
         pass
@@ -108,6 +109,7 @@ class Book:
                 order_by = f" ORDER BY {bt.Columns.CREATE_TIME} ASC"
 
             all = op.search(self.customer_id, self.admin_id, self.book_id, self.status, 
+                            where=self.where,
                             extras=self.__dict__, 
                             limit=self.limit,
                             order_by=order_by)
@@ -115,46 +117,42 @@ class Book:
         except Exception as e:
             return Response(ServErrorCode.CommonError)
 
+    
+    # =================================================================
+    def search_by_status(self, *args, create_order: SortOrder = None) -> (Response | list[dict]):
+        '''
+        Search order with customized conditions
+        '''
+
+        op = bt.OrderTable()
+        try:
+            order_by = None
+            if SortOrder.DESC == create_order:
+                order_by = f" ORDER BY {bt.Columns.CREATE_TIME} DESC"
+            elif SortOrder.ASC == create_order:
+                order_by = f" ORDER BY {bt.Columns.CREATE_TIME} ASC"
+
+            where = None
+            where_values = ()
+            if len(args) > 0:
+                where = f' WHERE {bt.Columns.STATUS} in ({", ".join(["?"] * len(args))})'
+                for e in args:
+                    if isinstance(e, bt.Status):
+                        where_values += (e.value,)
+                    elif isinstance(e, int):
+                        where_values += (e,)
+
+            all = op.search_where_clause(self.customer_id, self.admin_id, order_by=order_by,
+                            where=where, 
+                            where_values=where_values, 
+                            extras=None)
+            return all if all else []
+        except Exception as e:
+            return Response(ServErrorCode.CommonError)
+
     #===========================
+    def where_status_in(self, *args) -> str:
+        if not args:
+            return ''
 
-
-    def search_by_id(self, car_id: int) -> Response:
-        '''
-        Search a car's info
-        '''
-
-        if not car_id or car_id < 0:
-            return Response(ServErrorCode.CarInfoMissed, "Missed necessary info while searching a car.")
-
-        op = car.CarTable()
-        try:
-            this_car = op.search(car_id)
-            if not this_car:
-                return Response(ServErrorCode.CarRegisterFailed, 'Not find the registered car.')
-            
-            self.car_id = car_id
-            self.user_id = this_car[car.Columns.USER_ID]
-            self.make = this_car[car.Columns.MAKE]
-            self.model = this_car[car.Columns.MODEL]
-            self.year = this_car[car.Columns.YEAR]
-            self.mileage = this_car[car.Columns.MILEAGE]
-            self.rent_status = this_car[car.Columns.STATUS]
-            self.min_rent_period = this_car[car.Columns.MIN_RENT_PERIOD]
-            self.max_rent_period = this_car[car.Columns.MAX_RENT_PERIOD]
-            return Response(ServErrorCode.Success)
-        except Exception as e:
-            return Response(ServErrorCode.CommonError)
-
-    def search_for_user(self, user_id: int, limit:int) -> (Response | list[dict]):
-        if not user_id or user_id < 0:
-            return Response(ServErrorCode.CarInfoMissed, 'Invalid user id')
-
-        op = car.CarTable()
-        self.user_id = user_id
-        try:
-            all = op.search_for_users(self.user_id, order=f"ORDER BY {car.Columns.REGISTER} DESC {"LIMIT " + limit if not limit and limit > 0 else ""}")
-            return all
-        except Exception as e:
-            return Response(ServErrorCode.CommonError)
-
-        
+        return f'WHERE {bt.Columns.STATUS} in ({", ".join(['?'] * len(args))})'

@@ -178,7 +178,7 @@ class OrderTable:
             db_helper.rollback()
             return False
 
-    def search(self, customer_id:int, admin_id:int, order_id:int, order_status:int, 
+    def search(self, customer_id:int, admin_id:int, order_id:int, order_status:int,
                extras:dict = None, limit:int = None, order_by: str = None) -> list[dict]:
         '''
         To look up a customer's orders.
@@ -234,6 +234,82 @@ class OrderTable:
 
         if len(condition) > 0:
             sql += f' WHERE {" AND ".join(condition)} '
+
+        if not order_by:
+            sql += order_by
+
+        list = db_helper.execute_query(sql, values)
+        ret = []
+        for row in list:
+            ret.append(dict(row))
+        return ret
+
+    def search_where_clause(self, customer_id:int, admin_id:int, order_by: str = None, extras:dict = None, 
+                            where: str = None, where_values: tuple = None) -> list[dict]:
+        '''
+        To look up a customer's orders.
+        '''
+
+        condition = []
+        values = ()
+        if customer_id is not None:
+            condition.append(Columns.CUSTOMER_ID + " = ?")
+            values += (customer_id,)
+
+        if admin_id is not None:
+            condition.append(Columns.ADMIN_ID + " = ?")
+            values += (admin_id,)
+
+        if extras:
+            order_id = extras.get(Columns.ID, None)
+            if order_id is not None:
+                condition.append(Columns.ID + " = ?")
+                values += (order_id,)
+
+            order_status = extras.get(Columns.STATUS, None)
+            if order_status is not None:
+                condition.append(Columns.STATUS + " = ?")
+                values += (order_status,)
+
+            book_uid = extras.get(Columns.UID, None)
+            if book_uid:
+                condition.append(Columns.UID + " = ?")
+                values += (book_uid,)
+
+            car_id = extras.get(Columns.CAR_ID, None)
+            if car_id:
+                condition.append(Columns.CAR_ID + " = ?")
+                values += (car_id,)
+
+            start_date = extras.get(Columns.START_DATE, None)
+            if start_date:
+                condition.append(Columns.START_DATE + " = ?")
+                values += (start_date,)
+
+            end_date = extras.get(Columns.END_DATE, None)
+            if end_date:
+                condition.append(Columns.END_DATE + " = ?")
+                values += (end_date,)
+
+            create_date = extras.get(Columns.CREATE_TIME, None)
+            if create_date:
+                condition.append(Columns.CREATE_TIME + " = ?")
+                values += (create_date,)
+
+        sql = f'''
+            SELECT * FROM {_TABLE_NAME} 
+        '''
+
+        where_clause = where
+        if where_clause:
+            sql += where_clause
+
+        if len(condition) > 0:
+            if where:
+                where_clause += f' AND {" AND ".join(condition)} '
+                sql += where_clause
+            else:
+                sql += f' WHERE {" AND ".join(condition)} '
 
         if not order_by:
             sql += order_by
