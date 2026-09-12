@@ -96,6 +96,8 @@ yb_car_rental_system            # Root directory
 │   │       ├── components
 │   │       └── pages
 │   └── rental-car-node-server  # A simple Node.js server to assist to support React project to run
+└── docs                        # Store all documents
+    ├── UML                     # UML plantuml 
 └── server                      # Back-end
     ├── db                      # Database
     ├── exception               # Exception definition
