@@ -8,13 +8,13 @@ class UserInfoData(Data):
     is_admin: bool
     is_customer: bool
 
-    def __init__(self, user_id, username:str, email: str, is_admin: bool, is_customer: bool, *args, **kwargs):
+    def __init__(self, user_id, username:str, email: str, is_admin: bool, is_customer: bool, **kwargs):
         super().__init__(
             user_id = f'{user_id}' if user_id else user_id if isinstance(user_id, str) else '',
             username = safe_string(username),
             email = safe_string(email),
             is_admin = is_admin,
             is_customer = is_customer,
-            *args, **kwargs)
+            **kwargs)
 
         

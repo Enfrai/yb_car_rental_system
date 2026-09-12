@@ -4,9 +4,10 @@ from lib import safe_string
 class BookIdData(Data):
     book_id: str
 
-    def __init__(self, book_id, *args, **kwargs):
+    def __init__(self, book_id, **kwargs):
         super().__init__(
-            book_id = f'{book_id}' if book_id else book_id if isinstance(book_id, str) else ''
+            book_id = f'{book_id}' if book_id else book_id if isinstance(book_id, str) else '',
+            **kwargs
         )
 
 
@@ -30,7 +31,7 @@ class BookInfoData(Data):
                 total_fee: int,
                 status: str,
                 create_time: str,
-                *args, **kwargs
+                **kwargs
         ):
 
         super().__init__(
@@ -42,12 +43,12 @@ class BookInfoData(Data):
             end_date = end_date,
             total_fee = total_fee,
             status = status,
-            *args, **kwargs
+            **kwargs
         )
 
 
 class BookInfoList(Data):
     orders: list[BookInfoData] = []
 
-    def __init__(self, data: list[BookInfoData], *args, **kwargs):
-        super().__init__(data=data, *args, **kwargs)
+    def __init__(self, data: list[BookInfoData] = [], **kwargs):
+        super().__init__(data=data, **kwargs)

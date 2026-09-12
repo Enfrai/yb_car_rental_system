@@ -11,19 +11,15 @@ from exception import ServErrorCode, wrap_code
 class HTTPResponse(Response):
     data: Data = None
 
-    def __init__(self, code:str, message:str, detail:str = "", data:Data = None, *args, **kwargs):
-        super().__init__(code=code, message=message, detail=detail, data=data, *args, **kwargs)
+    def __init__(self, code:str, message:str, detail:str = "", data:Data = None, **kwargs):
+        super().__init__(
+            code=code if code else "", 
+            message=message if message else "", 
+            detail=detail if detail else "", 
+            data=data if data else {}, 
+            **kwargs
+        )
 
-    def to_dict(self) -> dict:
-        return {
-            "code": self.code if self.code is not None else "",
-            "message": self.message if self.message is not None else "",
-            "detail": self.detail if self.detail is not None else "",
-            "data": self.data.to_dict() if self.data is not None else {}
-        }
-
-    def __str__(self):
-        return str(self.to_dict())
 
 def exception_to_http_response(e: Exception) -> HTTPResponse:
     d = e.__dict__
@@ -33,7 +29,7 @@ def exception_to_http_response(e: Exception) -> HTTPResponse:
     return HTTPResponse(
         code if code else ServErrorCode.CommonError.value[0],
         message if message else ServErrorCode.CommonError.value[1],
-        detail if detail else f'{e}',
+        detail if detail else f'{e}'
     )
 
 def exception_to_response(e: Exception) -> Response:
@@ -44,9 +40,9 @@ def exception_to_response(e: Exception) -> Response:
     return Response(
         code if code else ServErrorCode.CommonError.value[0],
         message if message else ServErrorCode.CommonError.value[1],
-        detail if detail else f'{e}',
+        detail if detail else f'{e}'
     )
 
-def error_to_http_response(error: ServErrorCode, detail: str = '') -> HTTPResponse:
+def error_to_http_response(error: ServErrorCode, detail: str = '', data = None) -> HTTPResponse:
     code, message = wrap_code(error)
-    return HTTPResponse(code, message, detail, None)
+    return HTTPResponse(code, message, detail, data)

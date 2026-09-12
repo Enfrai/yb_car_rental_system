@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from service.model import User
-from lib import Response, HTTPResponse, exception_to_http_response
+from lib import Response, HTTPResponse, exception_to_http_response, error_to_http_response
 from service.view import UserInfoData
 from service.model import Role, str_to_role
 from exception import ServErrorCode
@@ -28,7 +28,7 @@ class UserController:
         '''
         try: 
             if not req.user_id:
-                return HTTPResponse(ServErrorCode.UserInfoMissed, "user_id is necessary but missed.")
+                return error_to_http_response(ServErrorCode.UserInfoMissed, "user_id is necessary but missed.")
 
             user_id = int(req.user_id)
 
@@ -47,7 +47,7 @@ class UserController:
 
             return HTTPResponse(resp.code, resp.message, resp.detail)
         except ValueError:
-            return HTTPResponse(ServErrorCode.UserInfoWrong, "WRONG user_id is provided.")
+            return error_to_http_response(ServErrorCode.UserInfoWrong, "WRONG user_id is provided.")
         except Exception as e:
             return exception_to_http_response(e)
 
@@ -58,7 +58,7 @@ class UserController:
 
         try:
             if not req.user_id:
-                return HTTPResponse(ServErrorCode.UserInfoMissed, "user_id is necessary but missed.")
+                return error_to_http_response(ServErrorCode.UserInfoMissed, "user_id is necessary but missed.")
 
             user_id = int(req.user_id)
             user = User()
@@ -72,7 +72,7 @@ class UserController:
 
             return HTTPResponse(resp.code, resp.message, resp.detail, data)
         except ValueError:
-            return HTTPResponse(ServErrorCode.UserInfoWrong, "WRONG user_id is provided.")
+            return error_to_http_response(ServErrorCode.UserInfoWrong, "WRONG user_id is provided.")
         except Exception as e:
             return exception_to_http_response(e)
 
@@ -109,32 +109,27 @@ class UserController:
         if not resp.is_success():
             return HTTPResponse(resp.code, resp.message, resp.detail)
 
-        # if user.user_id:
-        #     return HTTPResponse(ServErrorCode.UserRegFailed, 'User already existed.')
+        if user.is_valid():
+            return error_to_http_response(ServErrorCode.UserRegFailed, 'User already existed.')
 
         if not req.role or not req.username or not req.password or not req.email:
-            print("1")
-            return HTTPResponse(ServErrorCode.UserInfoMissed, 'User info missed.')
+            return error_to_http_response(ServErrorCode.UserInfoMissed, 'User info missed.')
 
         if req.role == 'admin':
             role = Role.ADMIN.value
         elif req.role == 'customer':
             role = Role.CUSTOMER.value
         else:
-            print("2")
-            return HTTPResponse(ServErrorCode.UserRegFailed, 'WRONG role.')
+            return error_to_http_response(ServErrorCode.UserRegFailed, 'WRONG role.')
 
         if not email_is_valid(req.email):
-            print("3")
-            return HTTPResponse(ServErrorCode.UserRegFailed, 'WRONG email')
+            return error_to_http_response(ServErrorCode.UserRegFailed, 'WRONG email')
 
         if len(req.username) <= 0:
-            print("4")
-            return HTTPResponse(ServErrorCode.UserRegFailed, 'WRONG username')
+            return error_to_http_response(ServErrorCode.UserRegFailed, 'WRONG username')
 
         if len(req.password) <= 0:
-            print("5")
-            return HTTPResponse(ServErrorCode.UserRegFailed, 'WRONG password')
+            return error_to_http_response(ServErrorCode.UserRegFailed, 'WRONG password')
 
         user = User()
         
@@ -145,7 +140,7 @@ class UserController:
                 return self.login(req)
             else:
                 Logger().debug("[controller] register user: success") 
-                HTTPResponse(ServErrorCode.Success)
+                error_to_http_response(ServErrorCode.Success)
 
         Logger().debug("[controller] register user: fail") 
         return HTTPResponse(resp.code, resp.message, resp.detail)

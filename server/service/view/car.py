@@ -4,10 +4,10 @@ from lib import safe_string
 class CarIdData(Data):
     car_id: str
 
-    def __init__(self, car_id, *args, **kwargs):
+    def __init__(self, car_id, **kwargs):
         super().__init__(
             car_id = f'{car_id}' if car_id else car_id if isinstance(car_id, str) else '',
-            *args, **kwargs
+            **kwargs
         )
 
 
@@ -31,7 +31,7 @@ class CarInfoData(Data):
                 rent_status: int,
                 min_rent_period: int,
                 max_rent_period: int,
-                *args, **kwargs):
+                **kwargs):
         super().__init(
             car_id = f'{car_id}' if car_id else '',
             user_id = f'{user_id}' if user_id else '',
@@ -42,7 +42,7 @@ class CarInfoData(Data):
             rent_status = rent_status,
             min_rent_period = min_rent_period,
             max_rent_period = max_rent_period,
-            *args, **kwargs
+            **kwargs
         )
 
 

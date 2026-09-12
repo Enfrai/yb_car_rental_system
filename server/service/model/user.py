@@ -18,14 +18,11 @@ def str_to_role(r: str) -> Role:
     return Role.ADMIN if r == 'admin' else Role.CUSTOMER if r == 'customer' else None
 
 class User:
-    user_id: int
-    username: str
-    password: str   # login key
-    email: str      # login key
-    role: int       # 
-
-    def __init__(self):
-        pass
+    user_id: int = None
+    username: str = None
+    password: str = None   # login key
+    email: str = None      # login key
+    role: int = None       # 
 
     def update(self, user_id: int) -> Response:
         '''
@@ -72,13 +69,19 @@ class User:
             Logger().debug(f"[model] register user: exception: {e}")
             return error_to_response(ServErrorCode.UserRegFailed, "Register user failed.")
 
+    def is_valid(self) -> bool:
+        '''
+        @return current user is valid
+        '''
+        return True if self.user_id else False
+
     def search_by_email_or_id(self, email:str = None, user_id: str = None, accept_null: bool = False) -> Response:
         user = UserTable()
 
         Logger().debug(f"[model] search_by_email_or_id: email: {email}, user_id: {user_id}")
 
         try:
-            resp = {}
+            resp = None
             if user_id:
                 resp = user.search_by_id(user_id)
             elif email:
