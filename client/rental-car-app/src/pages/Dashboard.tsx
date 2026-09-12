@@ -1,11 +1,11 @@
 import '../App.css';
 import { useNavigate } from 'react-router-dom';
-import { useUser, type User } from '../UserContext';
-import { PathBookingCar, PathBookingHisgory, PathUserLogin, PathUserRegister } from '../Config';
+import { useUser } from '../UserContext';
+import { PathBookingCar, PathBookingHisgory } from '../Config';
 
 function DashboardPage() {
     const navigate = useNavigate();
-    const { user, setUser } = useUser();
+    const { user } = useUser();
 
     const handleBookingCar = () => {
         navigate(PathBookingCar);
