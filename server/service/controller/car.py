@@ -42,7 +42,7 @@ class CarController:
             elif isinstance(resp, list):
                 all = []
                 for e in resp:
-                    one = view.CarInfoData().build(
+                    one = view.CarInfoData(
                         car.car_id, car.user_id, car.make, car.model, car.year, car.mileage, car.rent_status, car.min_rent_period, car.max_rent_period
                     )
                     all.append(one)

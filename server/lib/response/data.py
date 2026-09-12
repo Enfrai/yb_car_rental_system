@@ -8,4 +8,4 @@ from pydantic import BaseModel
 
 class Data(BaseModel):
     def to_dict(self) -> dict:
-        pass
+        return self.__dict__

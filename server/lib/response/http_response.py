@@ -11,8 +11,8 @@ from exception import ServErrorCode, wrap_code
 class HTTPResponse(Response):
     data: Data = None
 
-    def __init__(self, code:str, message:str, detail:str = "", data:Data = None, *args):
-        super().__init__(code=code, message=message, detail=detail, data=data, *args)
+    def __init__(self, code:str, message:str, detail:str = "", data:Data = None, *args, **kwargs):
+        super().__init__(code=code, message=message, detail=detail, data=data, *args, **kwargs)
 
     def to_dict(self) -> dict:
         return {

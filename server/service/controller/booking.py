@@ -80,7 +80,7 @@ class BookingController:
             status = info.get(bt.Columns.STATUS.value, None)
             create_time = info.get(bt.Columns.CREATE_TIME.value, None)
 
-            data = view.BookInfoData().build(
+            data = view.BookInfoData(
                 book_id, customer_id, admin_id, car_id,
                 start_date, end_date, total_fee, 
                 model.booking_status_from_int(status) if status else None, 
@@ -168,7 +168,7 @@ class BookingController:
                 return error_to_http_response(ServErrorCode.CommonError, f'{e}')
 
             # continue to response to client
-            data = view.BookInfoData().build(
+            data = view.BookInfoData(
                 book_id, customer_id, admin_id, car_id,
                 start_date, end_date, total_fee, 
                 model.booking_status_from_int(status) if status else None, 

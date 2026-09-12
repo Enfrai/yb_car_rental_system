@@ -4,11 +4,11 @@ from lib import safe_string
 class BookIdData(Data):
     book_id: str
 
-    def __init__(self, book_id: int):
-        self.car_id = f'{book_id}' if book_id else ''
+    def __init__(self, book_id, *args, **kwargs):
+        super().__init__(
+            book_id = f'{book_id}' if book_id else book_id if isinstance(book_id, str) else ''
+        )
 
-    def to_dict(self) -> dict:
-        return self.__dict__
 
 class BookInfoData(Data):
     book_id: str
@@ -21,31 +21,33 @@ class BookInfoData(Data):
     status: str
     create_time: str
     
-    def build(self, book_id: int,
-                customer_id: int,
-                admin_id: int,
-                car_id: int,
+    def __init__(self, book_id, # int
+                customer_id, # int
+                admin_id, # int
+                car_id, # int
                 start_date: str,
                 end_date: str,
                 total_fee: int,
-                status: str
+                status: str,
+                create_time: str,
+                *args, **kwargs
         ):
-        self.car_id = f'{car_id}' if car_id else ''
-        self.book_id = f'{book_id}' if book_id else ''
-        self.customer_id = f'{customer_id}' if customer_id else ''
-        self.admin_id = f'{admin_id}' if admin_id else ''
-        self.start_date = start_date
-        self.end_date = end_date
-        self.total_fee = total_fee
-        self.status = status
 
-        return self
+        super().__init__(
+            book_id = f'{book_id}' if book_id else book_id if isinstance(book_id, str) else '',
+            customer_id = f'{customer_id}' if customer_id else customer_id if isinstance(customer_id, str) else '',
+            admin_id = f'{admin_id}' if admin_id else admin_id if isinstance(admin_id, str) else '',
+            car_id = f'{car_id}' if car_id else car_id if isinstance(car_id, str) else '',
+            start_date = start_date,
+            end_date = end_date,
+            total_fee = total_fee,
+            status = status,
+            *args, **kwargs
+        )
 
-    def to_dict(self) -> dict:
-        return self.__dict__
 
 class BookInfoList(Data):
     orders: list[BookInfoData] = []
 
-    def build(self, data: list[BookInfoData] = []):
-        self.cars = data
+    def __init__(self, data: list[BookInfoData], *args, **kwargs):
+        super().__init__(data=data, *args, **kwargs)
