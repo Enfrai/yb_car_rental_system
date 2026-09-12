@@ -85,7 +85,7 @@ This part remains connection to `database` and separates all services into 3 dif
 
 It has similar isolated parts as `Micro-service`: `User`, `Car` and `Booking(Order)`, and supports actions to visit database. The design of this part maintains a multi-selection of different databases, such as `Sqlite3`, `MySql` etc. Just by following the execution of `Sqlite3`, any database can be supported.
 
-## Project files
+## Project structure
 ```text
 yb_car_rental_system            # Root directory
 ├── client                      # Front-end
