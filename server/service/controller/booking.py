@@ -42,8 +42,8 @@ class BookingController:
         
         op = bt.OrderTable()
         success = op.update(req.order_id, {
-            bt.Columns.STATUS: status,
-            bt.Columns.ADMIN_ID: req.user_id,
+            bt.Columns.STATUS.value: status,
+            bt.Columns.ADMIN_ID.value: req.user_id,
         })
 
         if not success:
@@ -70,15 +70,15 @@ class BookingController:
 
         all = []
         for info in resp:
-            book_id = info.get(bt.Columns.ID, None)
-            customer_id = info.get(bt.Columns.CUSTOMER_ID, None)
-            admin_id = info.get(bt.Columns.ADMIN_ID, None)
-            car_id = info.get(bt.Columns.CAR_ID, None)
-            start_date = info.get(bt.Columns.START_DATE, None)
-            end_date = info.get(bt.Columns.END_DATE, None)
-            total_fee = info.get(bt.Columns.TOTAL_FEE, None)
-            status = info.get(bt.Columns.STATUS, None)
-            create_time = info.get(bt.Columns.CREATE_TIME, None)
+            book_id = info.get(bt.Columns.ID.value, None)
+            customer_id = info.get(bt.Columns.CUSTOMER_ID.value, None)
+            admin_id = info.get(bt.Columns.ADMIN_ID.value, None)
+            car_id = info.get(bt.Columns.CAR_ID.value, None)
+            start_date = info.get(bt.Columns.START_DATE.value, None)
+            end_date = info.get(bt.Columns.END_DATE.value, None)
+            total_fee = info.get(bt.Columns.TOTAL_FEE.value, None)
+            status = info.get(bt.Columns.STATUS.value, None)
+            create_time = info.get(bt.Columns.CREATE_TIME.value, None)
 
             data = view.BookInfoData().build(
                 book_id, customer_id, admin_id, car_id,
@@ -128,7 +128,7 @@ class BookingController:
             
             seed = random.randrange(0, len(users))
             user = users[seed]
-            booker.admin_id = user.get(ut.Columns.ID)
+            booker.admin_id = user.get(ut.Columns.ID.value)
 
         # continue to book process
         resp = booker.book_a_car()
@@ -145,21 +145,21 @@ class BookingController:
             return HTTPResponse(resp.code, resp.message, resp.detail)
         elif isinstance(resp, list) and len(resp) == 1:
             info = resp[0]
-            book_id = info.get(bt.Columns.ID, None)
-            customer_id = info.get(bt.Columns.CUSTOMER_ID, None)
-            admin_id = info.get(bt.Columns.ADMIN_ID, None)
-            car_id = info.get(bt.Columns.CAR_ID, None)
-            start_date = info.get(bt.Columns.START_DATE, None)
-            end_date = info.get(bt.Columns.END_DATE, None)
-            total_fee = info.get(bt.Columns.TOTAL_FEE, None)
-            status = info.get(bt.Columns.STATUS, None)
-            create_time = info.get(bt.Columns.CREATE_TIME, None)
+            book_id = info.get(bt.Columns.ID.value, None)
+            customer_id = info.get(bt.Columns.CUSTOMER_ID.value, None)
+            admin_id = info.get(bt.Columns.ADMIN_ID.value, None)
+            car_id = info.get(bt.Columns.CAR_ID.value, None)
+            start_date = info.get(bt.Columns.START_DATE.value, None)
+            end_date = info.get(bt.Columns.END_DATE.value, None)
+            total_fee = info.get(bt.Columns.TOTAL_FEE.value, None)
+            status = info.get(bt.Columns.STATUS.value, None)
+            create_time = info.get(bt.Columns.CREATE_TIME.value, None)
 
             # sync car status to car table
             car = ct.CarTable()
             try:
                 success = car.update(car_id, {
-                    ct.Columns.STATUS: ct.Status.PENDDING,
+                    ct.Columns.STATUS.value: ct.Status.PENDDING.value,
                 })
 
                 if not success:

@@ -4,7 +4,7 @@ from lib import Response, HTTPResponse, exception_to_http_response
 from service.view import UserInfoData
 from service.model import Role, str_to_role
 from exception import ServErrorCode
-from lib import email_is_valid
+from lib import email_is_valid, Logger
 
 class UserLoginRequest(BaseModel):
     email: str = Field(...)
@@ -80,44 +80,60 @@ class UserController:
     def login(self, req: UserLoginRequest) -> HTTPResponse:
         user = User()
 
+        Logger().debug("[controller] login: ", req.__dict__)
+
         try:
             resp = user.login(req.email, req.password)
+            data = None
+
             if resp.is_success():
                 role = user.role
                 data = UserInfoData(user.user_id, user.username, user.email, 
-                                    None if not role else role & Role.ADMIN != 0, 
-                                    None if not role else role & Role.CUSTOMER != 0)
+                                    None if not role else role & Role.ADMIN.value != 0, 
+                                    None if not role else role & Role.CUSTOMER.value != 0)
 
+                Logger().debug(f"[controller] login: success >> {data.__dict__}")
+            else:
+                Logger().debug(f"[controller] login: fail >> {resp.__dict__}")
+            
             return HTTPResponse(resp.code, resp.message, resp.detail, data)
         except Exception as e:
+            Logger().debug(f"[controller] login: exception >> {e}")
             return exception_to_http_response(e)
 
     def register(self, req: UserRegisterRequest) -> HTTPResponse:
+        Logger().debug("[controller] register user: ", req.__dict__)
+        
         user = User()
-        resp = user.search_by_email_or_id(req.email)
+        resp = user.search_by_email_or_id(req.email, accept_null=True)
         if not resp.is_success():
             return HTTPResponse(resp.code, resp.message, resp.detail)
 
-        if user.user_id:
-            return HTTPResponse(ServErrorCode.UserRegFailed, 'User already existed.')
+        # if user.user_id:
+        #     return HTTPResponse(ServErrorCode.UserRegFailed, 'User already existed.')
 
-        if not req.role or not req.username or req.password or req.email:
+        if not req.role or not req.username or not req.password or not req.email:
+            print("1")
             return HTTPResponse(ServErrorCode.UserInfoMissed, 'User info missed.')
 
         if req.role == 'admin':
-            role = Role.ADMIN
+            role = Role.ADMIN.value
         elif req.role == 'customer':
-            role = Role.CUSTOMER
+            role = Role.CUSTOMER.value
         else:
+            print("2")
             return HTTPResponse(ServErrorCode.UserRegFailed, 'WRONG role.')
 
         if not email_is_valid(req.email):
+            print("3")
             return HTTPResponse(ServErrorCode.UserRegFailed, 'WRONG email')
 
         if len(req.username) <= 0:
+            print("4")
             return HTTPResponse(ServErrorCode.UserRegFailed, 'WRONG username')
 
         if len(req.password) <= 0:
+            print("5")
             return HTTPResponse(ServErrorCode.UserRegFailed, 'WRONG password')
 
         user = User()
@@ -125,9 +141,12 @@ class UserController:
         resp = user.register(req.username, req.password, req.email, role)
         if resp.is_success():
             if req.auto_login:
+                Logger().debug("[controller] register user >> auto login ...") 
                 return self.login(req)
             else:
+                Logger().debug("[controller] register user: success") 
                 HTTPResponse(ServErrorCode.Success)
 
+        Logger().debug("[controller] register user: fail") 
         return HTTPResponse(resp.code, resp.message, resp.detail)
             

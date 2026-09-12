@@ -27,13 +27,13 @@ def car_status_from_str(s: str) -> int:
     
 
 def car_status_from_int(s: int) -> str:
-    if s == car.Status.VALID:
+    if s == car.Status.VALID.value:
         return S_VALID
-    elif s == car.Status.IN_RENT:
+    elif s == car.Status.IN_RENT.value:
         return S_IN_RENT
-    elif s == car.Status.PENDDING:
+    elif s == car.Status.PENDDING.value:
         return S_PENDDING
-    elif s == car.Status.INVALID:
+    elif s == car.Status.INVALID.value:
         return S_INVALID
     else:
         return None
@@ -81,14 +81,14 @@ class Car:
                 return error_to_response(ServErrorCode.CarRegisterFailed, 'Not find the registered car.')
             
             self.car_id = car_id
-            self.user_id = this_car[car.Columns.USER_ID]
-            self.make = this_car[car.Columns.MAKE]
-            self.model = this_car[car.Columns.MODEL]
-            self.year = this_car[car.Columns.YEAR]
-            self.mileage = this_car[car.Columns.MILEAGE]
-            self.rent_status = this_car[car.Columns.STATUS]
-            self.min_rent_period = this_car[car.Columns.MIN_RENT_PERIOD]
-            self.max_rent_period = this_car[car.Columns.MAX_RENT_PERIOD]
+            self.user_id = this_car[car.Columns.USER_ID.value]
+            self.make = this_car[car.Columns.MAKE.value]
+            self.model = this_car[car.Columns.MODEL.value]
+            self.year = this_car[car.Columns.YEAR.value]
+            self.mileage = this_car[car.Columns.MILEAGE.value]
+            self.rent_status = this_car[car.Columns.STATUS.value]
+            self.min_rent_period = this_car[car.Columns.MIN_RENT_PERIOD.value]
+            self.max_rent_period = this_car[car.Columns.MAX_RENT_PERIOD.value]
             return error_to_response(ServErrorCode.Success)
         except Exception as e:
             return error_to_response(ServErrorCode.CommonError)
@@ -100,7 +100,7 @@ class Car:
         op = car.CarTable()
         self.user_id = user_id
         try:
-            all = op.search_for_users(self.user_id, order=f"ORDER BY {car.Columns.REGISTER} DESC {"LIMIT " + limit if not limit and limit > 0 else ""}")
+            all = op.search_for_users(self.user_id, order=f"ORDER BY {car.Columns.REGISTER.value} DESC {"LIMIT " + limit if not limit and limit > 0 else ""}")
             return all
         except Exception as e:
             return error_to_response(ServErrorCode.CommonError)
@@ -120,14 +120,14 @@ class Car:
         op = car.CarTable()
         try:
             success = op.register({
-                car.Columns.MAKE: self.make,
-                car.Columns.USER_ID: self.user_id,
-                car.Columns.MODEL: self.model,
-                car.Columns.YEAR: self.year,
-                car.Columns.MILEAGE: self.mileage,
-                car.Columns.STATUS: self.rent_status,
-                car.Columns.MIN_RENT_PERIOD: self.min_rent_period,
-                car.Columns.MAX_RENT_PERIOD: self.max_rent_period
+                car.Columns.MAKE.value: self.make,
+                car.Columns.USER_ID.value: self.user_id,
+                car.Columns.MODEL.value: self.model,
+                car.Columns.YEAR.value: self.year,
+                car.Columns.MILEAGE.value: self.mileage,
+                car.Columns.STATUS.value: self.rent_status,
+                car.Columns.MIN_RENT_PERIOD.value: self.min_rent_period,
+                car.Columns.MAX_RENT_PERIOD.value: self.max_rent_period
             })
 
             if not success:

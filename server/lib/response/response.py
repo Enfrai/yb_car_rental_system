@@ -15,11 +15,12 @@ class Response(BaseModel):
     def is_success(self) -> bool:
         return ServErrorCode.Success.value[0] == self.code
 
-    def __init__(self, code: str, message: str = '', detail: str = ""):
+    def __init__(self, code: str, message: str = '', detail: str = "", *args):
         super().__init__(
             code=code,
             message=message,
             detail=detail,
+            *args
         )
 
 def error_to_response(error: ServErrorCode, detail: str = '') -> Response:

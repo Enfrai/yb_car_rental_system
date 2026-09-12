@@ -31,15 +31,15 @@ def booking_status_from_str(s: str) -> int:
     
 
 def booking_status_from_int(s: int) -> str:
-    if s == bt.Status.PENDDING:
+    if s == bt.Status.PENDDING.value:
         return S_PENDDING
-    elif s == bt.Status.APPROVED:
+    elif s == bt.Status.APPROVED.value:
         return S_APPROVED
-    elif s == bt.Status.REJECTED:
+    elif s == bt.Status.REJECTED.value:
         return S_REJECTED
-    elif s == bt.Status.COMPLETED:
+    elif s == bt.Status.COMPLETED.value:
         return S_COMPLETED
-    elif s == bt.Status.CANCELLED:
+    elif s == bt.Status.CANCELLED.value:
         return S_CANCELLED
     else:
         return None
@@ -76,14 +76,14 @@ class Book:
         try:
             book_uid = gen_unique_id()
             success = op.book({
-                bt.Columns.UID: self.book_uid,
-                bt.Columns.CUSTOMER_ID: self.customer_id,
-                bt.Columns.ADMIN_ID: self.admin_id,
-                bt.Columns.CAR_ID: self.car_id,
-                bt.Columns.START_DATE: self.start_date,
-                bt.Columns.END_DATE: self.end_date,
-                bt.Columns.TOTAL_FEE: self.total_fee,
-                bt.Columns.STATUS: self.status,
+                bt.Columns.UID.value: self.book_uid,
+                bt.Columns.CUSTOMER_ID.value: self.customer_id,
+                bt.Columns.ADMIN_ID.value: self.admin_id,
+                bt.Columns.CAR_ID.value: self.car_id,
+                bt.Columns.START_DATE.value: self.start_date,
+                bt.Columns.END_DATE.value: self.end_date,
+                bt.Columns.TOTAL_FEE.value: self.total_fee,
+                bt.Columns.STATUS.value: self.status,
             })
 
             if not success:
@@ -104,9 +104,9 @@ class Book:
         try:
             order_by = None
             if SortOrder.DESC == create_order:
-                order_by = f" ORDER BY {bt.Columns.CREATE_TIME} DESC"
+                order_by = f" ORDER BY {bt.Columns.CREATE_TIME.value} DESC"
             elif SortOrder.ASC == create_order:
-                order_by = f" ORDER BY {bt.Columns.CREATE_TIME} ASC"
+                order_by = f" ORDER BY {bt.Columns.CREATE_TIME.value} ASC"
 
             all = op.search(self.customer_id, self.admin_id, self.book_id, self.status, 
                             where=self.where,
@@ -128,14 +128,14 @@ class Book:
         try:
             order_by = None
             if SortOrder.DESC == create_order:
-                order_by = f" ORDER BY {bt.Columns.CREATE_TIME} DESC"
+                order_by = f" ORDER BY {bt.Columns.CREATE_TIME.value} DESC"
             elif SortOrder.ASC == create_order:
-                order_by = f" ORDER BY {bt.Columns.CREATE_TIME} ASC"
+                order_by = f" ORDER BY {bt.Columns.CREATE_TIME.value} ASC"
 
             where = None
             where_values = ()
             if len(args) > 0:
-                where = f' WHERE {bt.Columns.STATUS} in ({", ".join(["?"] * len(args))})'
+                where = f' WHERE {bt.Columns.STATUS.value} in ({", ".join(["?"] * len(args))})'
                 for e in args:
                     if isinstance(e, bt.Status):
                         where_values += (e.value,)
@@ -155,4 +155,4 @@ class Book:
         if not args:
             return ''
 
-        return f'WHERE {bt.Columns.STATUS} in ({", ".join(['?'] * len(args))})'
+        return f'WHERE {bt.Columns.STATUS.value} in ({", ".join(['?'] * len(args))})'

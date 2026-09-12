@@ -35,19 +35,34 @@ class OrderTable:
     def __init__(self):
         sql = f'''
             CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (
-                {Columns.ID} INTEGER PRIMARY KEY AUTOINCREMENT,
-                {Columns.UID} INTEGER NOT NULL,
-                {Columns.CUSTOMER_ID} INTEGER NOT NULL,
-                {Columns.ADMIN_ID} INTEGER,
-                {Columns.CAR_ID} INTEGER NOT NULL,
-                {Columns.START_DATE} DATETIME NOT NULL,
-                {Columns.END_DATE} DATETIME NOT NULL,
-                {Columns.TOTAL_FEE} INTEGER NOT NULL,
-                {Columns.STATUS} INTEGER DEFAULT {Status.PENDDING.value},
-                {Columns.CREATE_TIME} DATETIME DEFAULT (datetime("now", "localtime"))
+                {Columns.ID.value} INTEGER PRIMARY KEY AUTOINCREMENT,
+                {Columns.UID.value} INTEGER NOT NULL,
+                {Columns.CUSTOMER_ID.value} INTEGER NOT NULL,
+                {Columns.ADMIN_ID.value} INTEGER,
+                {Columns.CAR_ID.value} INTEGER NOT NULL,
+                {Columns.START_DATE.value} DATETIME NOT NULL,
+                {Columns.END_DATE.value} DATETIME NOT NULL,
+                {Columns.TOTAL_FEE.value} INTEGER NOT NULL,
+                {Columns.STATUS.value} INTEGER DEFAULT {Status.PENDDING.value},
+                {Columns.CREATE_TIME.value} DATETIME DEFAULT (datetime("now", "localtime"))
             )
         '''
         db_helper.execute_non_query(sql)
+        db_helper.commit()
+
+    def _row_to_dict(self, row) -> dict:
+        return {
+            Columns.ID.value: row[0],
+            Columns.UID.value: row[1],
+            Columns.CUSTOMER_ID.value: row[2],
+            Columns.ADMIN_ID.value: row[3],
+            Columns.CAR_ID.value: row[4],
+            Columns.START_DATE.value: row[5],
+            Columns.END_DATE.value: row[6],
+            Columns.TOTAL_FEE.value: row[7],
+            Columns.STATUS.value: row[8],
+            Columns.CREATE_TIME.value: row[9],
+        }
 
     def update(self, book_id: int, info: dict) -> bool:
         '''
@@ -60,34 +75,34 @@ class OrderTable:
         if not info or not book_id:
             raise OrderError(ServErrorCode.OrderInfoMissed, 'Order info is missed while booking a car.')
         
-        admin_id = info.get(Columns.ADMIN_ID, None)
+        admin_id = info.get(Columns.ADMIN_ID.value, None)
         if not admin_id:
-            columns.append(f'{Columns.ADMIN_ID}=?')
+            columns.append(f'{Columns.ADMIN_ID.value}=?')
             values += (admin_id,)
 
-        status = info.get(Columns.STATUS, None)
+        status = info.get(Columns.STATUS.value, None)
         if status is not None:
-            columns.append(f'{Columns.STATUS}=?')
+            columns.append(f'{Columns.STATUS.value}=?')
             values += (status,)
 
-        car_id = info.get(Columns.CAR_ID, None)
+        car_id = info.get(Columns.CAR_ID.value, None)
         if not car_id:
-            columns.append(f'{Columns.CAR_ID}=?')
+            columns.append(f'{Columns.CAR_ID.value}=?')
             values += (car_id,)
 
-        start_date = info.get(Columns.START_DATE, None)
+        start_date = info.get(Columns.START_DATE.value, None)
         if not start_date:
-            columns.append(f'{Columns.START_DATE}=?')
+            columns.append(f'{Columns.START_DATE.value}=?')
             values += (start_date,)
 
-        end_date = info.get(Columns.END_DATE, None)
+        end_date = info.get(Columns.END_DATE.value, None)
         if not end_date:
-            columns.append(f'{Columns.END_DATE}=?')
+            columns.append(f'{Columns.END_DATE.value}=?')
             values += (end_date,)
 
-        total_fee = info.get(Columns.TOTAL_FEE, None)
+        total_fee = info.get(Columns.TOTAL_FEE.value, None)
         if not total_fee:
-            columns.append(f'{Columns.TOTAL_FEE}=?')
+            columns.append(f'{Columns.TOTAL_FEE.value}=?')
             values += (total_fee,)
 
         if len(columns) == 0:
@@ -97,7 +112,7 @@ class OrderTable:
         sql = f'''
             UPDATE {_TABLE_NAME}
             SET {", ".join(columns)}
-            WHERE {Columns.ID} =?
+            WHERE {Columns.ID.value} =?
         '''
         ret = db_helper.execute_non_query(sql, values)
         if ret == 0:
@@ -120,44 +135,44 @@ class OrderTable:
         if not info:
             raise OrderError(ServErrorCode.OrderInfoMissed, 'Order info is missed while booking a car.')
         
-        uid = info.get(Columns.UID, None)
+        uid = info.get(Columns.UID.value, None)
         if not uid:
-            columns.append(f'{Columns.UID}')
+            columns.append(f'{Columns.UID.value}')
             values += (uid,)
         
-        customer_id = info.get(Columns.CUSTOMER_ID, None)
+        customer_id = info.get(Columns.CUSTOMER_ID.value, None)
         if not customer_id:
-            columns.append(f'{Columns.CUSTOMER_ID}')
+            columns.append(f'{Columns.CUSTOMER_ID.value}')
             values += (customer_id,)
         
-        admin_id = info.get(Columns.ADMIN_ID, None)
+        admin_id = info.get(Columns.ADMIN_ID.value, None)
         if not admin_id:
-            columns.append(f'{Columns.ADMIN_ID}')
+            columns.append(f'{Columns.ADMIN_ID.value}')
             values += (admin_id,)
 
-        status = info.get(Columns.STATUS, None)
+        status = info.get(Columns.STATUS.value, None)
         if status is not None:
-            columns.append(f'{Columns.STATUS}')
+            columns.append(f'{Columns.STATUS.value}')
             values += (status,)
 
-        car_id = info.get(Columns.CAR_ID, None)
+        car_id = info.get(Columns.CAR_ID.value, None)
         if not car_id:
-            columns.append(f'{Columns.CAR_ID}')
+            columns.append(f'{Columns.CAR_ID.value}')
             values += (car_id,)
 
-        start_date = info.get(Columns.START_DATE, None)
+        start_date = info.get(Columns.START_DATE.value, None)
         if not start_date:
-            columns.append(f'{Columns.START_DATE}')
+            columns.append(f'{Columns.START_DATE.value}')
             values += (start_date,)
 
-        end_date = info.get(Columns.END_DATE, None)
+        end_date = info.get(Columns.END_DATE.value, None)
         if not end_date:
-            columns.append(f'{Columns.END_DATE}')
+            columns.append(f'{Columns.END_DATE.value}')
             values += (end_date,)
 
-        total_fee = info.get(Columns.TOTAL_FEE, None)
+        total_fee = info.get(Columns.TOTAL_FEE.value, None)
         if not total_fee:
-            columns.append(f'{Columns.TOTAL_FEE}')
+            columns.append(f'{Columns.TOTAL_FEE.value}')
             values += (total_fee,)
 
         if len(columns) == 0:
@@ -187,45 +202,45 @@ class OrderTable:
         condition = []
         values = ()
         if customer_id is not None:
-            condition.append(Columns.CUSTOMER_ID + " = ?")
+            condition.append(Columns.CUSTOMER_ID.value + " = ?")
             values += (customer_id,)
 
         if admin_id is not None:
-            condition.append(Columns.ADMIN_ID + " = ?")
+            condition.append(Columns.ADMIN_ID.value + " = ?")
             values += (admin_id,)
 
         if order_id is not None:
-            condition.append(Columns.ID + " = ?")
+            condition.append(Columns.ID.value + " = ?")
             values += (order_id,)
 
         if order_status is not None:
-            condition.append(Columns.STATUS + " = ?")
+            condition.append(Columns.STATUS.value + " = ?")
             values += (order_status,)
 
         if extras:
-            book_uid = extras.get(Columns.UID, None)
+            book_uid = extras.get(Columns.UID.value, None)
             if book_uid:
-                condition.append(Columns.UID + " = ?")
+                condition.append(Columns.UID.value + " = ?")
                 values += (book_uid,)
 
-            car_id = extras.get(Columns.CAR_ID, None)
+            car_id = extras.get(Columns.CAR_ID.value, None)
             if car_id:
-                condition.append(Columns.CAR_ID + " = ?")
+                condition.append(Columns.CAR_ID.value + " = ?")
                 values += (car_id,)
 
-            start_date = extras.get(Columns.START_DATE, None)
+            start_date = extras.get(Columns.START_DATE.value, None)
             if start_date:
-                condition.append(Columns.START_DATE + " = ?")
+                condition.append(Columns.START_DATE.value + " = ?")
                 values += (start_date,)
 
-            end_date = extras.get(Columns.END_DATE, None)
+            end_date = extras.get(Columns.END_DATE.value, None)
             if end_date:
-                condition.append(Columns.END_DATE + " = ?")
+                condition.append(Columns.END_DATE.value + " = ?")
                 values += (end_date,)
 
-            create_date = extras.get(Columns.CREATE_TIME, None)
+            create_date = extras.get(Columns.CREATE_TIME.value, None)
             if create_date:
-                condition.append(Columns.CREATE_TIME + " = ?")
+                condition.append(Columns.CREATE_TIME.value + " = ?")
                 values += (create_date,)
 
         sql = f'''
@@ -253,47 +268,47 @@ class OrderTable:
         condition = []
         values = ()
         if customer_id is not None:
-            condition.append(Columns.CUSTOMER_ID + " = ?")
+            condition.append(Columns.CUSTOMER_ID.value + " = ?")
             values += (customer_id,)
 
         if admin_id is not None:
-            condition.append(Columns.ADMIN_ID + " = ?")
+            condition.append(Columns.ADMIN_ID.value + " = ?")
             values += (admin_id,)
 
         if extras:
-            order_id = extras.get(Columns.ID, None)
+            order_id = extras.get(Columns.ID.value, None)
             if order_id is not None:
-                condition.append(Columns.ID + " = ?")
+                condition.append(Columns.ID.value + " = ?")
                 values += (order_id,)
 
-            order_status = extras.get(Columns.STATUS, None)
+            order_status = extras.get(Columns.STATUS.value, None)
             if order_status is not None:
-                condition.append(Columns.STATUS + " = ?")
+                condition.append(Columns.STATUS.value + " = ?")
                 values += (order_status,)
 
-            book_uid = extras.get(Columns.UID, None)
+            book_uid = extras.get(Columns.UID.value, None)
             if book_uid:
-                condition.append(Columns.UID + " = ?")
+                condition.append(Columns.UID.value + " = ?")
                 values += (book_uid,)
 
-            car_id = extras.get(Columns.CAR_ID, None)
+            car_id = extras.get(Columns.CAR_ID.value, None)
             if car_id:
-                condition.append(Columns.CAR_ID + " = ?")
+                condition.append(Columns.CAR_ID.value + " = ?")
                 values += (car_id,)
 
-            start_date = extras.get(Columns.START_DATE, None)
+            start_date = extras.get(Columns.START_DATE.value, None)
             if start_date:
-                condition.append(Columns.START_DATE + " = ?")
+                condition.append(Columns.START_DATE.value + " = ?")
                 values += (start_date,)
 
-            end_date = extras.get(Columns.END_DATE, None)
+            end_date = extras.get(Columns.END_DATE.value, None)
             if end_date:
-                condition.append(Columns.END_DATE + " = ?")
+                condition.append(Columns.END_DATE.value + " = ?")
                 values += (end_date,)
 
-            create_date = extras.get(Columns.CREATE_TIME, None)
+            create_date = extras.get(Columns.CREATE_TIME.value, None)
             if create_date:
-                condition.append(Columns.CREATE_TIME + " = ?")
+                condition.append(Columns.CREATE_TIME.value + " = ?")
                 values += (create_date,)
 
         sql = f'''

@@ -7,6 +7,7 @@ Definition and implementation for user table.
 from enum import Enum
 from .db_helper import db_helper, DBHelper
 from exception.user_error import UserError, ServErrorCode
+from lib import Logger
 
 class Columns(Enum):
     ID = 'user_id'
@@ -23,15 +24,26 @@ class UserTable:
     def __init__(self):
         sql = f'''
             CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (
-                {Columns.ID} INTEGER PRIMARY KEY AUTOINCREMENT,
-                {Columns.USERNAME} CHAR(64) NOT NULL,
-                {Columns.PASSWORD} CHAR(128) NOT NULL,
-                {Columns.EMAIL} CHAR(128) NOT NULL,
-                {Columns.IS_ADMIN} BOOLEAN NOT NULL,
-                {Columns.IS_CUSTOMER} BOOLEAN NOT NULL
+                {Columns.ID.value} INTEGER PRIMARY KEY AUTOINCREMENT,
+                {Columns.USERNAME.value} CHAR(64) NOT NULL,
+                {Columns.PASSWORD.value} CHAR(128) NOT NULL,
+                {Columns.EMAIL.value} CHAR(128) NOT NULL,
+                {Columns.IS_ADMIN.value} BOOLEAN NOT NULL,
+                {Columns.IS_CUSTOMER.value} BOOLEAN NOT NULL
             )
             '''
         db_helper.execute_non_query(sql)
+        db_helper.commit()
+
+    def _row_to_dict(self, row) -> dict:
+        return {
+            Columns.ID.value: row[0],
+            Columns.USERNAME.value: row[1],
+            Columns.PASSWORD.value: row[2],
+            Columns.EMAIL.value: row[3],
+            Columns.IS_ADMIN.value: row[4],
+            Columns.IS_CUSTOMER.value: row[5],
+        }
 
     def update(self, user_id: int, username: str, email: str, password: str, is_admin: bool, is_customer: bool) -> bool:
         '''
@@ -41,23 +53,23 @@ class UserTable:
         cols = []
         vals = ()
         if not username:
-            cols.append(Columns.USERNAME + ' = ?')
+            cols.append(Columns.USERNAME.value + ' = ?')
             vals += (username,)
 
         if not email:
-            cols.append(Columns.EMAIL + ' = ?')
+            cols.append(Columns.EMAIL.value + ' = ?')
             vals += (email,)
 
         if not password:
-            cols.append(Columns.PASSWORD + ' = ?')
+            cols.append(Columns.PASSWORD.value + ' = ?')
             vals += (password,)
 
         if not is_admin:
-            cols.append(Columns.IS_ADMIN + ' = ?')
+            cols.append(Columns.IS_ADMIN.value + ' = ?')
             vals += (is_admin,)
 
         if not is_customer:
-            cols.append(Columns.IS_CUSTOMER + ' = ?')
+            cols.append(Columns.IS_CUSTOMER.value + ' = ?')
             vals += (is_customer,)
 
         if len(cols) == 0:
@@ -66,7 +78,7 @@ class UserTable:
         sql = f'''
             UPDATE {_TABLE_NAME} 
             SET {", ".join(cols)}
-            WHERE {Columns.ID} = ?
+            WHERE {Columns.ID.value} = ?
         '''
         if db_helper.execute_non_query(sql, vals) == 0:
             # True
@@ -82,22 +94,29 @@ class UserTable:
         insert on record into user table
         '''
 
-        if not username or not email or not password or not is_admin is None or is_customer is None:
+        Logger().debug("[db] insert user: ", f", values: {(username, password, email, is_admin, is_customer)}")
+
+        if not username or not email or not password or is_admin is None or is_customer is None:
             raise UserError(ServErrorCode.UserInfoMissed, 'Info missed while registering a user.')
 
         sql = f'''
                 INSERT INTO {_TABLE_NAME} 
-                ({Columns.USERNAME}, {Columns.PASSWORD}, {Columns.EMAIL}, {Columns.IS_ADMIN}, {Columns.IS_CUSTOMER})
+                ({Columns.USERNAME.value}, {Columns.PASSWORD.value}, {Columns.EMAIL.value}, {Columns.IS_ADMIN.value}, {Columns.IS_CUSTOMER.value})
                 values 
                 (?, ?, ?, ?, ?)
             '''
+        
+        Logger().debug("[db] insert user: ", f"sql: {sql}")
+
         ret = db_helper.execute_non_query(sql, (username, password, email, is_admin, is_customer))
         if ret == 0:
             # True
             db_helper.commit()
+            Logger().debug("[db] insert user: success")
             return True
         else:
             db_helper.rollback
+            Logger().debug("[db] insert user: fail")
             return False
 
     def exist(self, email: str = None, user_id: int = None) -> bool:
@@ -108,10 +127,10 @@ class UserTable:
         condition = ''
         values = ()
         if user_id is not None:
-            condition = f'{Columns.ID} = ?'
+            condition = f'{Columns.ID.value} = ?'
             values = (user_id,)
         elif email is not None:
-            condition = f'{Columns.EMAIL} = ?'
+            condition = f'{Columns.EMAIL.value} = ?'
             values = (email,)
         else:
             raise DBExeError(ServErrorCode.ExecuteError, "Must provide email or user_id while invoking exist().")
@@ -132,14 +151,15 @@ class UserTable:
             raise DBExeError(ServErrorCode.ExecuteError, "Must provide user_id while invoking search_by_id().")
 
         sql = f'''
-            SELECT * FROM {_TABLE_NAME} WHERE {Columns.ID} = ?
+            SELECT * FROM {_TABLE_NAME} WHERE {Columns.ID.value} = ?
         '''
 
         list = db_helper.execute_query(sql, sql, (user_id,))
         if len(list) == 0:
-            raise UserError(ServErrorCode.UserNotExist, 'User undefined')
+            # raise UserError(ServErrorCode.UserNotExist, 'User undefined')
+            return None
 
-        return dict(list[0])
+        return self._row_to_dict(list[0])
 
     def search_all_users(self, is_admin: bool = False, is_customer: bool = False) -> list[dict]:
         '''
@@ -151,11 +171,11 @@ class UserTable:
         conditions = []
         values = ()
         if is_admin:
-            conditions.append(f' {Columns.IS_ADMIN} = ? ')
+            conditions.append(f' {Columns.IS_ADMIN.value} = ? ')
             values += (True, )
 
         if is_customer:
-            conditions.append(f' {Columns.IS_CUSTOMER} = ? ')
+            conditions.append(f' {Columns.IS_CUSTOMER.value} = ? ')
             values += (True, )
 
         if len(conditions) > 0:
@@ -164,7 +184,7 @@ class UserTable:
         rows = db_helper.execute_query(sql, values)
         ret = []
         for r in rows:
-            ret.append(dict(r))
+            ret.append(self._row_to_dict(r))
 
         return ret
 
@@ -177,14 +197,15 @@ class UserTable:
             raise DBExeError(ServErrorCode.ExecuteError, "Must provide user_id while invoking search_by_id().")
 
         sql = f'''
-            SELECT * FROM {_TABLE_NAME} WHERE {Columns.EMAIL} = ?
+            SELECT * FROM {_TABLE_NAME} WHERE {Columns.EMAIL.value} = ?
         '''
 
         rows = db_helper.execute_query(sql, (email,))
         if len(rows) == 0:
-            raise UserError(ServErrorCode.UserNotExist, 'User undefined')
+            # raise UserError(ServErrorCode.UserNotExist, 'User undefined')
+            return None
 
-        return dict(rows[0])
+        return self._row_to_dict(rows[0])
 
     def search_by_email_and_password(self, email:str, password:str) -> dict:
         '''
@@ -195,12 +216,12 @@ class UserTable:
             raise DBExeError(ServErrorCode.ExecuteError, "Must provide user_id while invoking search_by_email_and_password().")
 
         sql = f'''
-            SELECT * FROM {_TABLE_NAME} WHERE {Columns.EMAIL} = ? AND {Columns.PASSWORD} = ?
+            SELECT * FROM {_TABLE_NAME} WHERE {Columns.EMAIL.value} = ? AND {Columns.PASSWORD.value} = ?
         '''
 
         rows = db_helper.execute_query(sql, (email, password))
         if len(rows) == 0:
             raise UserError(ServErrorCode.UserNotExist, 'No matched user by email and password.')
 
-        return dict(rows[0])
+        return self._row_to_dict(rows[0])
 

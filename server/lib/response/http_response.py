@@ -11,9 +11,8 @@ from exception import ServErrorCode, wrap_code
 class HTTPResponse(Response):
     data: Data = None
 
-    def __init__(self, code:str, message:str, detail:str = "", data:Data = None):
-        super().__init__(code, message, detail)
-        self.data = data
+    def __init__(self, code:str, message:str, detail:str = "", data:Data = None, *args):
+        super().__init__(code=code, message=message, detail=detail, data=data, *args)
 
     def to_dict(self) -> dict:
         return {
@@ -27,25 +26,25 @@ class HTTPResponse(Response):
         return str(self.to_dict())
 
 def exception_to_http_response(e: Exception) -> HTTPResponse:
-    d = dict(f'{e}')
+    d = e.__dict__
     code = d.get('code', None)
     message = d.get('message', None)
     detail = d.get('detail', None)
     return HTTPResponse(
-        code if code else '',
-        message if message else '',
-        detail if detail else d,
+        code if code else ServErrorCode.CommonError.value[0],
+        message if message else ServErrorCode.CommonError.value[1],
+        detail if detail else f'{e}',
     )
 
 def exception_to_response(e: Exception) -> Response:
-    d = dict(f'{e}')
+    d = e.__dict__
     code = d.get('code', None)
     message = d.get('message', None)
     detail = d.get('detail', None)
     return Response(
-        code if code else '',
-        message if message else '',
-        detail if detail else d,
+        code if code else ServErrorCode.CommonError.value[0],
+        message if message else ServErrorCode.CommonError.value[1],
+        detail if detail else f'{e}',
     )
 
 def error_to_http_response(error: ServErrorCode, detail: str = '') -> HTTPResponse:

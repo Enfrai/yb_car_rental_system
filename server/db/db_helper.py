@@ -7,6 +7,7 @@ Database helper <<Singleton>>
 from .database import Database
 from .sqlite_database import SQLiteDatabase
 import threading
+from lib import Logger
 
 # database implementation configuration
 config = {
@@ -22,7 +23,7 @@ class DBHelper:
         global config
 
         if config['type'] == 'sqlite':
-            self._instance = SQLiteDatabase()
+            self._db = SQLiteDatabase()
         else:
             raise ValueError('Directed to an undefined database type!!')
 
@@ -38,17 +39,22 @@ class DBHelper:
         execute select statement
         '''
         try:
-            return self._db.execute_query(query, params)
-        except:
+            ret = self._db.execute_query(query.replace('\n', ''), params)
+            Logger().debug(f"[DB-helper] execute_query : success : {ret}")
+            return ret
+        except Exception as e:
+            Logger().debug(f"[DB-helper] execute_query with exception {e}")
             return []
 
     def execute_non_query(self, query: str, params: tuple = None) -> int:
         '''
         execute update/insert/delete/create table statement'''
         try:
-            self._db.execute_non_query(query, params)
+            self._db.execute_non_query(query.replace('\n', ''), params)
+            Logger().debug(f"[DB-helper] execute_non_query : success")
             return 0
-        except:
+        except Exception as e:
+            Logger().debug(f"[DB-helper] execute_non_query with exception {e}")
             return -1
 
     def commit(self):

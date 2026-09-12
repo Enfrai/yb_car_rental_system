@@ -7,6 +7,7 @@ from service import controller
 from lib import HTTPResponse
 from notification import NotificationCenter
 from service import model
+import sys
 
 app = FastAPI(title='Car Retal System')
 
@@ -131,8 +132,12 @@ if __name__ == '__main__':
         .register(model.OnDBExceptionNotification())
     )
 
+    l = len(sys.argv)
+    host = '0.0.0.0' if l <= 1 else sys.argv[1]
+    port = int(sys.argv[2]) if l > 2 else 8000
+
     try:
-        uvicorn.run(app, host="127.0.0.1", port=8000)
+        uvicorn.run(app, host=host, port=port)
     except Exception as e:
         notification_center.notify_exception()
     finally:

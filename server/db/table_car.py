@@ -33,19 +33,34 @@ class CarTable:
     def __init__(self):
         sql = f'''
             CREATE TABLE IF NOT EXISTS {_TABLE_NAME} (
-                {Columns.ID} INTEGER PRIMARY KEY AUTOINCREMENT,
-                {Columns.USER_ID} INTEGER NOT NULL,
-                {Columns.MAKE} CHAR(128) NOT NULL,
-                {Columns.MODEL} CHAR(128) NOT NULL,
-                {Columns.YEAR} INTEGER NOT NULL,
-                {Columns.MILEAGE} INTEGER DEFAULT 0,
-                {Columns.REGISTER} DATETIME DEFAULT (datetime("now", "localtime")),
-                {Columns.STATUS} INTEGER DEFAULT {Status.VALID.value},
-                {Columns.MIN_RENT_PERIOD} INTEGER DEFAULT 1,
-                {Columns.MAX_RENT_PERIOD} INTEGER DEFAULT 0
+                {Columns.ID.value} INTEGER PRIMARY KEY AUTOINCREMENT,
+                {Columns.USER_ID.value} INTEGER NOT NULL,
+                {Columns.MAKE.value} CHAR(128) NOT NULL,
+                {Columns.MODEL.value} CHAR(128) NOT NULL,
+                {Columns.YEAR.value} INTEGER NOT NULL,
+                {Columns.MILEAGE.value} INTEGER DEFAULT 0,
+                {Columns.REGISTER.value} DATETIME DEFAULT (datetime("now", "localtime")),
+                {Columns.STATUS.value} INTEGER DEFAULT {Status.VALID.value},
+                {Columns.MIN_RENT_PERIOD.value} INTEGER DEFAULT 1,
+                {Columns.MAX_RENT_PERIOD.value} INTEGER DEFAULT 0
             )
         '''
         db_helper.execute_non_query(sql)
+        db_helper.commit()
+
+    def _row_to_dict(self, row) -> dict:
+        return {
+            Columns.ID.value: row[0],
+            Columns.USER_ID.value: row[1],
+            Columns.MAKE.value: row[2],
+            Columns.MODEL.value: row[3],
+            Columns.YEAR.value: row[4],
+            Columns.MILEAGE.value: row[5],
+            Columns.REGISTER.value: row[6],
+            Columns.STATUS.value: row[7],
+            Columns.MIN_RENT_PERIOD.value: row[8],
+            Columns.MAX_RENT_PERIOD.value: row[9],
+        }
 
     def update(self, car_id: int, car: dict) -> bool:
         '''
@@ -58,24 +73,24 @@ class CarTable:
         if not car or not car_id:
             raise CarError(ServErrorCode.CarInfoMissed, 'Car info is missed while updating a car.')
         
-        mileage = car.get(Columns.MILEAGE, None)
+        mileage = car.get(Columns.MILEAGE.value, None)
         if mileage is not None:
-            columns.append(f'{Columns.MILEAGE}=?')
+            columns.append(f'{Columns.MILEAGE.value}=?')
             values += (mileage,)
 
-        status = car.get(Columns.STATUS, None)
+        status = car.get(Columns.STATUS.value, None)
         if status is not None:
-            columns.append(f'{Columns.STATUS}=?')
+            columns.append(f'{Columns.STATUS.value}=?')
             values += (status,)
 
-        min_rent_period = car.get(Columns.MIN_RENT_PERIOD, None)
+        min_rent_period = car.get(Columns.MIN_RENT_PERIOD.value, None)
         if min_rent_period is not None:
-            columns.append(f'{Columns.MIN_RENT_PERIOD}=?')
+            columns.append(f'{Columns.MIN_RENT_PERIOD.value}=?')
             values += (min_rent_period,)
 
-        max_rent_period = car.get(Columns.MAX_RENT_PERIOD, None)
+        max_rent_period = car.get(Columns.MAX_RENT_PERIOD.value, None)
         if max_rent_period is not None:
-            columns.append(f'{Columns.MAX_RENT_PERIOD}=?')
+            columns.append(f'{Columns.MAX_RENT_PERIOD.value}=?')
             values += (max_rent_period,)
 
         if len(columns) == 0:
@@ -85,7 +100,7 @@ class CarTable:
         sql = f'''
             UPDATE {_TABLE_NAME}
             SET {", ".join(columns)}
-            WHERE {Columns.ID} =?
+            WHERE {Columns.ID.value} =?
         '''
         ret = db_helper.execute_non_query(sql, values)
         if ret == 0:
@@ -105,14 +120,14 @@ class CarTable:
         car_checked = False
 
         if car:
-            user_id = car.get(Columns.USER_ID, None)
-            make = car.get(Columns.MAKE, None)
-            model = car.get(Columns.MODEL, None)
-            year = car.get(Columns.YEAR, None)
-            mileage = car.get(Columns.MILEAGE, None)
-            register = car.get(Columns.REGISTER, None)
-            min_rent_period = car.get(Columns.MIN_RENT_PERIOD, 1)
-            max_rent_period = car.get(Columns.MAX_RENT_PERIOD, 0)
+            user_id = car.get(Columns.USER_ID.value, None)
+            make = car.get(Columns.MAKE.value, None)
+            model = car.get(Columns.MODEL.value, None)
+            year = car.get(Columns.YEAR.value, None)
+            mileage = car.get(Columns.MILEAGE.value, None)
+            register = car.get(Columns.REGISTER.value, None)
+            min_rent_period = car.get(Columns.MIN_RENT_PERIOD.value, 1)
+            max_rent_period = car.get(Columns.MAX_RENT_PERIOD.value, 0)
 
             car_checked = not user_id and not make and not model and not year and not mileage and not register \
                 and not min_rent_period and not max_rent_period
@@ -122,7 +137,8 @@ class CarTable:
 
         sql = f'''
             INSERT INTO {_TABLE_NAME} 
-            ({Columns.MAKE}, {Columns.MODEL}, {Columns.YEAR}, {Columns.MILEAGE}, {Columns.REGISTER}, {Columns.MIN_RENT_PERIOD}, {Columns.MAX_RENT_PERIOD})
+            ({Columns.MAKE.value}, {Columns.MODEL.value}, {Columns.YEAR.value}, {Columns.MILEAGE.value}, 
+            {Columns.REGISTER.value}, {Columns.MIN_RENT_PERIOD.value}, {Columns.MAX_RENT_PERIOD.value})
             VALUES 
             (?, ?, ?, ?, ?, ?, ?)
         '''
@@ -145,7 +161,7 @@ class CarTable:
             raise DBExeError(ServErrorCode.ExecuteError, "Must provide car_id while invoking exist() from CarTable.")
 
         sql = f'''
-            SELECT * FROM {_TABLE_NAME} WHERE {Columns.ID} = ?
+            SELECT * FROM {_TABLE_NAME} WHERE {Columns.ID.value} = ?
         '''
         list = db_helper.execute_query(sql, (car_id,))
         return len(list) > 0
@@ -159,13 +175,13 @@ class CarTable:
             raise DBExeError("Must provide car_id while invoking exist() from CarTable.")
 
         sql = f'''
-            SELECT * FROM {_TABLE_NAME} WHERE {Columns.ID} = ?
+            SELECT * FROM {_TABLE_NAME} WHERE {Columns.ID.value} = ?
         '''
         list = db_helper.execute_query(sql, (car_id,))
         if len(list) == 0:
             raise CarError(ServErrorCode.CarNotExist, 'Car undefined.')
 
-        return dict(list[0])
+        return self._row_to_dict(list[0])
     
     def search_for_users(self, user_id:int, order:str) -> list[dict]:
         '''
@@ -178,57 +194,57 @@ class CarTable:
         order_by = order if order else ''
 
         sql = f'''
-            SELECT * FROM {_TABLE_NAME} WHERE {Columns.USER_ID} = ? {order_by}
+            SELECT * FROM {_TABLE_NAME} WHERE {Columns.USER_ID.value} = ? {order_by}
         '''
         list = db_helper.execute_query(sql, (user_id,))
         ret = []
         for row in list:
-            ret.append(dict(row))
+            ret.append(self._row_to_dict(row))
 
         return ret
 
     def search_with_coditions(self, con: dict, limit: int) -> list[dict]:
-        car_id = con.get(Columns.ID, None)
-        user_id = con.get(Columns.USER_ID, None)
-        make = con.get(Columns.MAKE, None)
-        model = con.get(Columns.MODEL, None)
-        year = con.get(Columns.YEAR, None)
-        mileage = con.get(Columns.MILEAGE, None)
-        rent_status = con.get(Columns.STATUS, None)
+        car_id = con.get(Columns.ID.value, None)
+        user_id = con.get(Columns.USER_ID.value, None)
+        make = con.get(Columns.MAKE.value, None)
+        model = con.get(Columns.MODEL.value, None)
+        year = con.get(Columns.YEAR.value, None)
+        mileage = con.get(Columns.MILEAGE.value, None)
+        rent_status = con.get(Columns.STATUS.value, None)
 
         conditions = []
         values = ()
 
         if not car_id and car_id > 0:
-            conditions.append(f'{Columns.ID} = ?')
+            conditions.append(f'{Columns.ID.value} = ?')
             values = (car_id,)
 
         if not user_id and user_id > 0:
-            conditions.append(f'{Columns.USER_ID} = ?')
+            conditions.append(f'{Columns.USER_ID.value} = ?')
             values += (user_id,)
 
         if not make:
-            conditions.append(f'{Columns.MAKE} = ?')
+            conditions.append(f'{Columns.MAKE.value} = ?')
             values += (make,)
 
         if not model:
-            conditions.append(f'{Columns.MODEL} = ?')
+            conditions.append(f'{Columns.MODEL.value} = ?')
             values += (model,)
 
         if not year and year > 0:
-            conditions.append(f'{Columns.YEAR} = ?')
+            conditions.append(f'{Columns.YEAR.value} = ?')
             values += (year,)
 
         if not mileage:
             if mileage < 0:
-                conditions.append(f'{Columns.MILEAGE} >= ?')
+                conditions.append(f'{Columns.MILEAGE.value} >= ?')
                 values += (-mileage,)
             elif mileage > 0:
-                conditions.append(f'{Columns.MILEAGE} <= ?')
+                conditions.append(f'{Columns.MILEAGE.value} <= ?')
                 values += (mileage,)
 
         if not rent_status and rent_status > 0:
-            conditions.append(f'{Columns.STATUS} = ?')
+            conditions.append(f'{Columns.STATUS.value} = ?')
             values += (rent_status,)
 
         sql = f'''
@@ -242,7 +258,7 @@ class CarTable:
 
         ret_list = []
         for row in db_helper.execute_query(sql, values):
-            ret_list.append(dict(row))
+            ret_list.append(self._row_to_dict(row))
 
         return ret_list
 

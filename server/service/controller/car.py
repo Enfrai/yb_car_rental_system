@@ -80,7 +80,7 @@ class CarController:
                 return exception_to_http_response(ServErrorCode.CarRegisterFailed, "Car registers failed.")
             else:
                 info = list[0]
-                car_id = info.get(ct.Columns.ID, None)
+                car_id = info.get(ct.Columns.ID.value, None)
                 if not car_id:
                     return error_to_http_response(ServErrorCode.CarRegisterFailed, "Car registers failed for car id not defined.")
                 
