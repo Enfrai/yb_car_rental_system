@@ -1,13 +1,64 @@
+import '../App.css';
+import { useNavigate } from 'react-router-dom';
 import { useUser, type User } from '../UserContext';
-import type React from 'react';
-import { useState } from 'react';
+import { PathBookingCar, PathBookingHisgory, PathUserLogin, PathUserRegister } from '../Config';
 
-export default function DashboardPage() {
-      const { user, setUser } = useUser();
+function DashboardPage() {
+    const navigate = useNavigate();
+    const { user, setUser } = useUser();
+
+    const handleBookingCar = () => {
+        navigate(PathBookingCar);
+    }
+
+    const handleBookingHistory = () => {
+        navigate(PathBookingHisgory);
+    }
+
+    console.log(`is_admin: ${user?.is_admin}, is_customer: ${user?.is_customer}`)
+
+    var role = user?.is_customer ? 'Customer' : '';
+    if (user?.is_admin) {
+        if (role) {
+            role += " & ";
+        }
+        role += 'Admin'
+    }
+
+    console.log(`role: ${role}`)
 
     return (
-        <main id="center">
-        <h2>{user?.username ?? 'xxxxx'}</h2>
-        </main>
+      <section id="center">
+        <div style={{ margin: "0px 24px" }}>
+          <h1>Hello {user?.username}, Role: {role}</h1>
+        </div>
+        <button
+          style={{
+            width: "180px",
+            justifyContent: "center",
+            alignItems: "center",
+            marginTop: "124px",
+          }}
+          type="button"
+          className="counter"
+          onClick={handleBookingCar}
+        >
+          Book a car
+        </button>
+        <button
+          style={{
+            width: "180px",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+          type="button"
+          className="counter"
+          onClick={handleBookingHistory}
+        >
+          Booking history
+        </button>
+      </section>
     );
 }
+
+export default DashboardPage

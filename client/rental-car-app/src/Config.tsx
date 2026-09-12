@@ -17,3 +17,10 @@ export const CarSearchUrl = Server + "/car/search";
 export const PathUserLogin = '/user/login'
 export const PathUserRegister = '/user/register'
 export const PathUserDashboad = '/user/dashboard'
+
+export const PathBookingCar = '/order/book'
+export const PathBookingHisgory = '/order/all_for_users'
+export const PathBookingConfirm = '/order/confirm'
+
+export const PathCarRegister = '/car/register'
+export const PathCarSearch = '/car/search'
