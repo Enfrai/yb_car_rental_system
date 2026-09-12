@@ -43,9 +43,9 @@ class UserController:
                 s_req = UserSearchRequest()
                 s_req.user_id = user_id
                 resp = self.search(req)
-                return HTTPResponse(resp.code, resp.message, resp.detail, resp.data)
+                return HTTPResponse().build(resp.code, resp.message, resp.detail, resp.data)
 
-            return HTTPResponse(resp.code, resp.message, resp.detail)
+            return HTTPResponse().build(resp.code, resp.message, resp.detail)
         except ValueError:
             return error_to_http_response(ServErrorCode.UserInfoWrong, "WRONG user_id is provided.")
         except Exception as e:
@@ -66,11 +66,11 @@ class UserController:
             data = None
 
             if resp.is_success():
-                data = UserInfoData(user.user_id, user.username, user.email, 
+                data = UserInfoData().build(user.user_id, user.username, user.email, 
                                     user.role & Role.ADMIN.value != 0,
                                     user.role & Role.CUSTOMER.value != 0)
 
-            return HTTPResponse(resp.code, resp.message, resp.detail, data)
+            return HTTPResponse().build(resp.code, resp.message, resp.detail, data)
         except ValueError:
             return error_to_http_response(ServErrorCode.UserInfoWrong, "WRONG user_id is provided.")
         except Exception as e:
@@ -88,7 +88,7 @@ class UserController:
 
             if resp.is_success():
                 role = user.role
-                data = UserInfoData(user.user_id, user.username, user.email, 
+                data = UserInfoData().build(user.user_id, user.username, user.email, 
                                     None if not role else role & Role.ADMIN.value != 0, 
                                     None if not role else role & Role.CUSTOMER.value != 0)
 
@@ -96,7 +96,9 @@ class UserController:
             else:
                 Logger().debug(f"[controller] login: fail >> {resp.__dict__}")
             
-            return HTTPResponse(resp.code, resp.message, resp.detail, data)
+            r = HTTPResponse().build(resp.code, resp.message, resp.detail, data)
+            Logger().debug(f"[controller] login: success >> response: {r.model_dump_json()}")
+            return r
         except Exception as e:
             Logger().debug(f"[controller] login: exception >> {e}")
             return exception_to_http_response(e)
@@ -107,7 +109,7 @@ class UserController:
         user = User()
         resp = user.search_by_email_or_id(req.email, accept_null=True)
         if not resp.is_success():
-            return HTTPResponse(resp.code, resp.message, resp.detail)
+            return HTTPResponse().build(resp.code, resp.message, resp.detail)
 
         if user.is_valid():
             return error_to_http_response(ServErrorCode.UserRegFailed, 'User already existed.')
@@ -143,5 +145,5 @@ class UserController:
                 error_to_http_response(ServErrorCode.Success)
 
         Logger().debug("[controller] register user: fail") 
-        return HTTPResponse(resp.code, resp.message, resp.detail)
+        return HTTPResponse().build(resp.code, resp.message, resp.detail)
             

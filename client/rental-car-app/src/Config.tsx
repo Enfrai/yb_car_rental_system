@@ -16,3 +16,4 @@ export const CarSearchUrl = Server + "/car/search";
 
 export const PathUserLogin = '/user/login'
 export const PathUserRegister = '/user/register'
+export const PathUserDashboad = '/user/dashboard'

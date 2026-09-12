@@ -1,19 +1,32 @@
 import React, { useState } from 'react';
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { PathUserLogin, PathUserDashboad } from '../Config';
 import '../App.css';
 import API from '../API';
 import { UserRegisterUrl } from '../Config';
-// import LoadingModal from '../components/LoadingModel';
+import LoadingModal from '../components/LoadingModel';
+import Toast from '../components/Toast';
+import { useUser, type User } from '../UserContext';
 
 export default function RegisterPage() {
+  const navigate = useNavigate();
+  const { user, setUser } = useUser();
+
   // Local state for the registration form inputs
   const [formData, setFormData] = useState({
     username: '',
     email: '',
     password: '',
     auto_login: true,
-    role: 'customer', // Default selected role
+    role: 'customer',
   });
+
+  const [apiStatus, setLoading] = useState({
+    loading: false,
+    title: 'Loading'
+  })
+
+  const [toast, showToast] = useState("")
 
 //   const navigate = useNavigate();
 
@@ -35,12 +48,24 @@ export default function RegisterPage() {
         UserRegisterUrl, formData, 
         () => {
             console.log('registering...')
+            setLoading({loading: true, title: 'Registering...'})
         },
-        (code: string, messag: string, detail: string) => {
-            console.log('error >> ', code, messag, detail)
+        (code: string, message: string, detail: string) => {
+            console.log('error >> ', `${code} | ${message} | ${detail}`);
+            setLoading({loading: false, title: "Loading"});
+            showToast(detail);
         },
-        (data: Map<string, Object>) => {
+        (data: User) => {
             console.log("success >> ", data)
+            setLoading({loading: false, title: "Loading"})
+
+            setUser(data);
+
+            if (formData.auto_login) {
+              navigate(PathUserDashboad);
+            } else {
+              navigate(PathUserLogin);
+            }
         }
     ).post();
   };
@@ -116,6 +141,12 @@ export default function RegisterPage() {
           Sign Up
         </button>
       </form>
+
+      <LoadingModal isOpen={apiStatus.loading}
+        message={apiStatus.title}/>
+
+      <Toast message={toast}
+        onClose={() => { showToast("") }}/>
     </main>
   );
 }

@@ -7,5 +7,4 @@ Response data abstract definition
 from pydantic import BaseModel
 
 class Data(BaseModel):
-    def to_dict(self) -> dict:
-        return self.__dict__
+    pass

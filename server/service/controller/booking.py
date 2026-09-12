@@ -64,7 +64,7 @@ class BookingController:
         op.admin_id = req.admin_id
         resp = op.search_with_conditions()
         if isinstance(resp, Response):
-            return HTTPResponse(resp.code, resp.message, resp.detail)
+            return HTTPResponse().build(resp.code, resp.message, resp.detail)
         elif not isinstance(resp, list):
             return error_to_http_response(ServErrorCode.CommonError)
 
@@ -101,7 +101,7 @@ class BookingController:
         booker.customer_id = int(req.customer_id) if req.customer_id else None
         resp = booker.search_by_status(bt.Status.RESERVED, bt.Status.COMPLETED, bt.Status.CANCELLED, bt.Status.REJECTED, create_order=None)
         if isinstance(resp, Response):
-            return HTTPResponse(resp.code, resp.message, resp.detail)
+            return HTTPResponse().build(resp.code, resp.message, resp.detail)
         elif not isinstance(resp, list):
             return error_to_http_response(ServErrorCode.CommonError)
 
@@ -142,7 +142,7 @@ class BookingController:
         booker.limit = 1
         resp = booker.search_with_conditions()
         if isinstance(resp, Response):
-            return HTTPResponse(resp.code, resp.message, resp.detail)
+            return HTTPResponse().build(resp.code, resp.message, resp.detail)
         elif isinstance(resp, list) and len(resp) == 1:
             info = resp[0]
             book_id = info.get(bt.Columns.ID.value, None)

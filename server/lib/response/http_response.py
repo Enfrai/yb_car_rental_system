@@ -7,18 +7,17 @@ HTTP response definition, used to do data response from FE to BE
 from .response import Response
 from .data import Data
 from exception import ServErrorCode, wrap_code
+from typing import Generic, TypeVar, Optional, Union
+
+T = TypeVar('T')
 
 class HTTPResponse(Response):
-    data: Data = None
+    data: Optional[T] = None
 
-    def __init__(self, code:str, message:str, detail:str = "", data:Data = None, **kwargs):
-        super().__init__(
-            code=code if code else "", 
-            message=message if message else "", 
-            detail=detail if detail else "", 
-            data=data if data else {}, 
-            **kwargs
-        )
+    def build(self, code:str = '', message:str = '', detail:str = "", data: Generic[T] = None):
+        super().build(code if code else "", message if message else "", detail if detail else "");
+        self.data = data if data else {}
+        return self
 
 
 def exception_to_http_response(e: Exception) -> HTTPResponse:
@@ -26,7 +25,7 @@ def exception_to_http_response(e: Exception) -> HTTPResponse:
     code = d.get('code', None)
     message = d.get('message', None)
     detail = d.get('detail', None)
-    return HTTPResponse(
+    return HTTPResponse().build(
         code if code else ServErrorCode.CommonError.value[0],
         message if message else ServErrorCode.CommonError.value[1],
         detail if detail else f'{e}'
@@ -37,7 +36,7 @@ def exception_to_response(e: Exception) -> Response:
     code = d.get('code', None)
     message = d.get('message', None)
     detail = d.get('detail', None)
-    return Response(
+    return Response().build(
         code if code else ServErrorCode.CommonError.value[0],
         message if message else ServErrorCode.CommonError.value[1],
         detail if detail else f'{e}'
@@ -45,4 +44,4 @@ def exception_to_response(e: Exception) -> Response:
 
 def error_to_http_response(error: ServErrorCode, detail: str = '', data = None) -> HTTPResponse:
     code, message = wrap_code(error)
-    return HTTPResponse(code, message, detail, data)
+    return HTTPResponse().build(code, message, detail, data)

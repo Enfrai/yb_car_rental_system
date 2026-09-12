@@ -1,10 +1,12 @@
 // UserContext.tsx
 import React, { createContext, useContext, useState } from 'react';
 
-interface User {
-  name: string;
-  role: string;
-  userId: string;
+export interface User {
+  user_id: string;
+  username: string;
+  email: string; 
+  is_admin: boolean;
+  is_customer: boolean;
 }
 
 interface UserContextType {

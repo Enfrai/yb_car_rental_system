@@ -38,7 +38,7 @@ class CarController:
 
             resp = car.search_with_conditions()
             if isinstance(resp, Response):
-                return HTTPResponse(resp.code, resp.message, resp.detail)
+                return HTTPResponse().build(resp.code, resp.message, resp.detail)
             elif isinstance(resp, list):
                 all = []
                 for e in resp:
@@ -68,13 +68,13 @@ class CarController:
 
         resp = car.register()
         if not resp.is_success():
-            return HTTPResponse(resp.code, resp.message, resp.detail)
+            return HTTPResponse().build(resp.code, resp.message, resp.detail)
 
         car = model.Car()
         car.user_id = req.user_id
         resp = car.search_for_user(car.user_id, 1)
         if isinstance(resp, Response):
-            return HTTPResponse(resp.code, resp.message, resp.detail)
+            return HTTPResponse().build(resp.code, resp.message, resp.detail)
         elif isinstance(resp, list):
             if len(list) == 0:
                 return exception_to_http_response(ServErrorCode.CarRegisterFailed, "Car registers failed.")
@@ -85,4 +85,4 @@ class CarController:
                     return error_to_http_response(ServErrorCode.CarRegisterFailed, "Car registers failed for car id not defined.")
                 
                 data = view.CarIdData(car_id)
-                return HTTPResponse(resp.code, resp.message, resp.detail, data)
+                return HTTPResponse().build(resp.code, resp.message, resp.detail, data)

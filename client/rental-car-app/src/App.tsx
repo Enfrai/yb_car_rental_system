@@ -4,7 +4,8 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import { PathUserLogin, PathUserRegister } from './Config';
+import DashboardPage from './pages/Dashboard';
+import { PathUserLogin, PathUserRegister, PathUserDashboad } from './Config';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path={PathUserLogin} element={<LoginPage />} />
           <Route path={PathUserRegister} element={<RegisterPage />} />
+          <Route path={PathUserDashboad} element={<DashboardPage />} />
         </Routes>
       </BrowserRouter>
     </UserProvider>

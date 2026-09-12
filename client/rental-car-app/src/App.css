@@ -167,3 +167,94 @@ body {
   font-size: 15px;
   font-weight: 500;
 }
+
+/* Toast Container (Fixed in the top-right corner) */
+.toast-container {
+  position: fixed;
+  top: 24px;
+  right: 24px;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none; /* Allow click-through when container is idle */
+}
+
+/* Base Toast Item (Styled with your project's theme variables) */
+.toast-item {
+  pointer-events: auto;
+  min-width: 280px;
+  max-width: 400px;
+  padding: 12px 16px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--md-sys-color-on-surface);
+  background: var(--accent-bg);
+  border: 2px solid var(--accent-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: all 0.3s ease-in-out;
+  animation: toastSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Toast Variants */
+.toast-item.toast-success {
+  border-color: var(--accent);
+}
+
+.toast-item.toast-error {
+  border-color: #ff4d4f;
+  color: #ff4d4f;
+}
+
+.toast-item.toast-info {
+  border-color: var(--accent-border);
+}
+
+/* Manual Close Button */
+.toast-close-btn {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 16px;
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 0 4px;
+  line-height: 1;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+/* Entry Animation */
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Responsive adjustment */
+@media (max-width: 1024px) {
+  .toast-container {
+    top: 16px;
+    right: 16px;
+    left: 16px;
+  }
+  
+  .toast-item {
+    min-width: auto;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
