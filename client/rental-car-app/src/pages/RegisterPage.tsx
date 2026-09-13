@@ -1,38 +1,43 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { PathUserLogin, PathUserDashboad } from '../Config';
-import '../App.css';
-import API from '../API';
-import { UserRegisterUrl } from '../Config';
-import LoadingModal from '../components/LoadingModel';
-import Toast from '../components/Toast';
-import { useUser, type User } from '../UserContext';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { PathUserLogin, PathUserDashboad } from "../Config";
+import "../App.css";
+import API from "../API";
+import { UserRegisterUrl } from "../Config";
+import LoadingModal from "../components/LoadingModel";
+import Toast from "../components/Toast";
+import { useUser, type User } from "../UserContext";
 
 export default function RegisterPage() {
   const navigate = useNavigate();
-  const { user, setUser } = useUser();
+  const { setUser } = useUser();
 
   // Local state for the registration form inputs
   const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
+    username: "",
+    email: "",
+    password: "",
     auto_login: true,
-    role: 'customer',
+    role: "customer",
   });
 
   const [apiStatus, setLoading] = useState({
     loading: false,
-    title: 'Loading'
-  })
+    title: "Loading",
+  });
 
-  const [toast, showToast] = useState("")
+  const [toast, showToast] = useState("");
 
-//   const navigate = useNavigate();
+  //   const navigate = useNavigate();
 
   // Handle value updates for all form controls
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
+  ) => {
     const { name, value } = e.target;
+
+    console.log(`select ${name}: ${value}`);
+
     setFormData((prevData) => ({
       ...prevData,
       [name]: value,
@@ -42,31 +47,32 @@ export default function RegisterPage() {
   // Handle form submission
   const handleSubmit = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Registration submitted:', formData);
+    console.log("Registration submitted:", formData);
 
     new API(
-        UserRegisterUrl, formData, 
-        () => {
-            console.log('registering...')
-            setLoading({loading: true, title: 'Registering...'})
-        },
-        (code: string, message: string, detail: string) => {
-            console.log('error >> ', `${code} | ${message} | ${detail}`);
-            setLoading({loading: false, title: "Loading"});
-            showToast(detail);
-        },
-        (data: User) => {
-            console.log("success >> ", data)
-            setLoading({loading: false, title: "Loading"})
+      UserRegisterUrl,
+      formData,
+      () => {
+        console.log("registering...");
+        setLoading({ loading: true, title: "Registering..." });
+      },
+      (code: string, message: string, detail: string) => {
+        console.log("error >> ", `${code} | ${message} | ${detail}`);
+        setLoading({ loading: false, title: "Loading" });
+        showToast(detail);
+      },
+      (data: User) => {
+        console.log("success >> ", data);
+        setLoading({ loading: false, title: "Loading" });
 
-            setUser(data);
+        setUser(data);
 
-            if (formData.auto_login) {
-              navigate(PathUserDashboad);
-            } else {
-              navigate(PathUserLogin);
-            }
+        if (formData.auto_login) {
+          navigate(PathUserDashboad);
+        } else {
+          navigate(PathUserLogin);
         }
+      },
     ).post();
   };
 
@@ -125,7 +131,7 @@ export default function RegisterPage() {
           <label htmlFor="userType">User Type</label>
           <select
             id="userType"
-            name="userType"
+            name="role"
             className="select-field"
             value={formData.role}
             onChange={handleChange}
@@ -142,11 +148,14 @@ export default function RegisterPage() {
         </button>
       </form>
 
-      <LoadingModal isOpen={apiStatus.loading}
-        message={apiStatus.title}/>
+      <LoadingModal isOpen={apiStatus.loading} message={apiStatus.title} />
 
-      <Toast message={toast}
-        onClose={() => { showToast("") }}/>
+      <Toast
+        message={toast}
+        onClose={() => {
+          showToast("");
+        }}
+      />
     </main>
   );
 }
