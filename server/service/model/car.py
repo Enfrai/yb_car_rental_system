@@ -6,7 +6,7 @@ Car model definition
 
 from db import table_car as car
 from exception import ServErrorCode
-from lib import Response, error_to_response
+from lib import Response, error_to_response, Logger
 
 S_VALID = 'available'   # 0
 S_IN_RENT = 'in_rent'     # 1
@@ -110,11 +110,11 @@ class Car:
         Register a car, need to check user is admin
         '''
 
+        Logger().debug(f'[model] register >> register a car: {self.__dict__}')
+
         if not self.user_id or not self.make or not self.model or not self.year or not self.mileage \
-              or self.mileage <= 0 or not self.rent_status \
-              or not self.min_rent_period or self.min_rent_period <= 0 \
-              or not self.max_rent_period or self.max_rent_period < 0 or \
-                (self.max_rent_period > 0 and self.min_rent_period > self.max_rent_period):
+              or self.mileage <= 0 or self.min_rent_period <= 0 or self.max_rent_period < 0 :
+            Logger().debug(f'[model] error >> info check failed while performing check. CarInfoMissed...')
             return error_to_response(ServErrorCode.CarInfoMissed, "Missed necessary info while registering a car.")
 
         op = car.CarTable()
@@ -131,10 +131,13 @@ class Car:
             })
 
             if not success:
+                Logger().debug(f'[model] error >> car table perform failed. CarRegisterFailed...')
                 return error_to_response(ServErrorCode.CarRegisterFailed)
 
+            Logger().debug(f'[model] success >> car table perform success...')
             return error_to_response(ServErrorCode.Success)
         except Exception as e:
+            Logger().debug(f'[model] error >> car table perform exception: {e.__dict__}...')
             return error_to_response(ServErrorCode.CarRegisterFailed)
 
         

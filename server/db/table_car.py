@@ -8,6 +8,7 @@ from enum import Enum
 from .db_helper import db_helper
 from exception.db_error import DBExeError, ServErrorCode
 from exception.car_error import CarError
+from lib import Logger
 
 class Columns(Enum):
     ID = "car_id"
@@ -39,7 +40,7 @@ class CarTable:
                 {Columns.MODEL.value} CHAR(128) NOT NULL,
                 {Columns.YEAR.value} INTEGER NOT NULL,
                 {Columns.MILEAGE.value} INTEGER DEFAULT 0,
-                {Columns.REGISTER.value} DATETIME DEFAULT (datetime("now", "localtime")),
+                {Columns.REGISTER.value} DATETIME DEFAULT CURRENT_TIMESTAMP,
                 {Columns.STATUS.value} INTEGER DEFAULT {Status.VALID.value},
                 {Columns.MIN_RENT_PERIOD.value} INTEGER DEFAULT 1,
                 {Columns.MAX_RENT_PERIOD.value} INTEGER DEFAULT 0
@@ -119,36 +120,42 @@ class CarTable:
 
         car_checked = False
 
+        Logger().debug(f'[DB] >> register car : {car}')
+
         if car:
             user_id = car.get(Columns.USER_ID.value, None)
             make = car.get(Columns.MAKE.value, None)
             model = car.get(Columns.MODEL.value, None)
             year = car.get(Columns.YEAR.value, None)
-            mileage = car.get(Columns.MILEAGE.value, None)
-            register = car.get(Columns.REGISTER.value, None)
+            mileage = car.get(Columns.MILEAGE.value, 0)
+            # register = car.get(Columns.REGISTER.value, None)
             min_rent_period = car.get(Columns.MIN_RENT_PERIOD.value, 1)
             max_rent_period = car.get(Columns.MAX_RENT_PERIOD.value, 0)
 
-            car_checked = not user_id and not make and not model and not year and not mileage and not register \
-                and not min_rent_period and not max_rent_period
+            Logger().debug(f'[DB] >> register car : not user_id: {user_id} and not make: {make} and not model: {model} and not year: {year}')
+
+            car_checked = user_id and make and model and year
 
         if not car_checked:
             raise CarError(ServErrorCode, 'Car necessary info missed while registering a car.')
 
         sql = f'''
             INSERT INTO {_TABLE_NAME} 
-            ({Columns.MAKE.value}, {Columns.MODEL.value}, {Columns.YEAR.value}, {Columns.MILEAGE.value}, 
-            {Columns.REGISTER.value}, {Columns.MIN_RENT_PERIOD.value}, {Columns.MAX_RENT_PERIOD.value})
+            ({Columns.USER_ID.value}, {Columns.MAKE.value}, {Columns.MODEL.value}, {Columns.YEAR.value}, {Columns.MILEAGE.value}, 
+            {Columns.MIN_RENT_PERIOD.value}, {Columns.MAX_RENT_PERIOD.value})
             VALUES 
             (?, ?, ?, ?, ?, ?, ?)
         '''
-        ret = db_helper.execute_non_query(sql, (make, model, year, mileage, register, min_rent_period, max_rent_period))
+        ret = db_helper.execute_non_query(sql, (user_id, make, model, year, mileage, min_rent_period, max_rent_period))
+        
+        Logger().debug(f'[DB] >> register car sql returned: {ret}')
+        
         if ret == 0:
             # True
             db_helper.commit()
             return True
         else:
-            db_helper.rollback
+            db_helper.rollback()
             return False
 
 

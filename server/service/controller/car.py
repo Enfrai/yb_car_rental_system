@@ -70,19 +70,21 @@ class CarController:
         if not resp.is_success():
             return HTTPResponse().build(resp.code, resp.message, resp.detail)
 
+        r = resp
+
         car = model.Car()
-        car.user_id = req.user_id
+        car.user_id = int(req.user_id) if isinstance(req.user_id, str) else req.user_id
         resp = car.search_for_user(car.user_id, 1)
         if isinstance(resp, Response):
             return HTTPResponse().build(resp.code, resp.message, resp.detail)
         elif isinstance(resp, list):
-            if len(list) == 0:
+            if len(resp) == 0:
                 return exception_to_http_response(ServErrorCode.CarRegisterFailed, "Car registers failed.")
             else:
-                info = list[0]
+                info = resp[0]
                 car_id = info.get(ct.Columns.ID.value, None)
                 if not car_id:
                     return error_to_http_response(ServErrorCode.CarRegisterFailed, "Car registers failed for car id not defined.")
                 
                 data = view.CarIdData(car_id)
-                return HTTPResponse().build(resp.code, resp.message, resp.detail, data)
+                return HTTPResponse().build(r.code, r.message, r.detail, data)

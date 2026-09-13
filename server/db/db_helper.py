@@ -62,6 +62,11 @@ class DBHelper:
         execute database commit'''
         self._db.commit()
 
+    def rollback(self):
+        '''
+        execute database rollback'''
+        self._db.rollback()
+
     def close(self):
         '''
         close database

@@ -44,7 +44,7 @@ class OrderTable:
                 {Columns.END_DATE.value} DATETIME NOT NULL,
                 {Columns.TOTAL_FEE.value} INTEGER NOT NULL,
                 {Columns.STATUS.value} INTEGER DEFAULT {Status.PENDDING.value},
-                {Columns.CREATE_TIME.value} DATETIME DEFAULT (datetime("now", "localtime"))
+                {Columns.CREATE_TIME.value} DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         '''
         db_helper.execute_non_query(sql)

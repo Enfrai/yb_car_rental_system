@@ -6,7 +6,7 @@ Booking model definition
 
 from db import table_booking as bt
 from exception import ServErrorCode
-from lib import Response, gen_unique_id, SortOrder, error_to_response
+from lib import Response, gen_unique_id, SortOrder, error_to_response, Logger
 
 # S_RESERVED = 'reserved'     # 0
 S_PENDDING = 'pendding'     # 1
@@ -67,9 +67,12 @@ class Book:
         Book a car
         '''
 
+        Logger().debug(f'[model] book_a_car >> Booking a car {self.__dict__}')
+
         if not self.customer_id or not self.admin_id or not self.car_id \
               or not self.start_date <= 0 or not self.end_date \
               or (not self.total_fee and self.total_fee > 0) or not self.status:
+            Logger().debug(f'[model] error >> missed info while checking...')
             return error_to_response(ServErrorCode.CarInfoMissed, "Missed necessary info while registering a car.")
 
         op = bt.OrderTable
@@ -87,11 +90,14 @@ class Book:
             })
 
             if not success:
+                Logger().debug(f'[model] error >> order table exec error, OrderGenFailed...')
                 return error_to_response(ServErrorCode.OrderGenFailed)
 
             self.book_uid = book_uid
+            Logger().debug(f'[model] success >> order gen: bookid: {book_uid}...')
             return error_to_response(ServErrorCode.Success)
         except Exception as e:
+            Logger().debug(f'[model] error >> order table exec exception, {e}...')
             return error_to_response(ServErrorCode.OrderGenFailed)
 
     # =================================================================
