@@ -1,0 +1,83 @@
+@startuml
+' Overall server use cases: core business behavior only.
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam actorStyle awesome
+
+actor Customer
+actor Administrator as Admin
+actor "Web Client" as Client
+
+rectangle "Automated Car Rental Server" {
+  package "User Management" {
+    usecase "Register user" as UC_Register
+    usecase "Login" as UC_Login
+    usecase "Search user" as UC_UserSearch
+    usecase "Update user" as UC_UserUpdate
+  }
+
+  package "Car Management" {
+    usecase "Register car" as UC_CarRegister
+    usecase "Search available cars" as UC_CarSearch
+  }
+
+  package "Booking Management" {
+    usecase "Book a car" as UC_Book
+    usecase "View booking history" as UC_History
+    usecase "Confirm booking" as UC_Confirm
+  }
+
+  package "Server Infrastructure" {
+    usecase "Serve HTTP API" as UC_API
+    usecase "Persist business data" as UC_Persist
+    usecase "Handle server shutdown or failure" as UC_Shutdown
+  }
+}
+
+Client --> UC_API
+Customer --> UC_Register
+Customer --> UC_Login
+Customer --> UC_CarSearch
+Customer --> UC_Book
+Customer --> UC_History
+Admin --> UC_Login
+Admin --> UC_UserSearch
+Admin --> UC_UserUpdate
+Admin --> UC_CarRegister
+Admin --> UC_CarSearch
+Admin --> UC_History
+Admin --> UC_Confirm
+
+UC_API .> UC_Register : <<route>>
+UC_API .> UC_Login : <<route>>
+UC_API .> UC_UserSearch : <<route>>
+UC_API .> UC_UserUpdate : <<route>>
+UC_API .> UC_CarRegister : <<route>>
+UC_API .> UC_CarSearch : <<route>>
+UC_API .> UC_Book : <<route>>
+UC_API .> UC_History : <<route>>
+UC_API .> UC_Confirm : <<route>>
+
+UC_Register .> UC_Persist : <<include>>
+UC_Login .> UC_Persist : <<include>>
+UC_UserSearch .> UC_Persist : <<include>>
+UC_UserUpdate .> UC_Persist : <<include>>
+UC_CarRegister .> UC_Persist : <<include>>
+UC_CarSearch .> UC_Persist : <<include>>
+UC_Book .> UC_Persist : <<include>>
+UC_History .> UC_Persist : <<include>>
+UC_Confirm .> UC_Persist : <<include>>
+UC_Shutdown .> UC_Persist : <<include>>
+
+note right of UC_Book
+Checks in-process bookings,
+assigns an administrator when needed,
+creates the order and updates car status.
+end note
+
+note right of UC_Confirm
+Changes booking status and
+records the confirming administrator.
+end note
+@enduml

@@ -1,0 +1,71 @@
+@startuml
+' Use cases defined inside server/db only.
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+rectangle "server/db" {
+  package "database access" {
+    usecase "Open database" as UC_Open
+    usecase "Execute query" as UC_Query
+    usecase "Execute non-query" as UC_NonQuery
+    usecase "Commit transaction" as UC_Commit
+    usecase "Rollback transaction" as UC_Rollback
+    usecase "Close database" as UC_Close
+  }
+
+  package "user table" {
+    usecase "Create users table" as UC_UserCreate
+    usecase "Insert user" as UC_UserInsert
+    usecase "Update user" as UC_UserUpdate
+    usecase "Check user existence" as UC_UserExist
+    usecase "Search user by id" as UC_UserById
+    usecase "Search user by email" as UC_UserByEmail
+    usecase "Search user by credentials" as UC_UserLogin
+    usecase "Search users by role" as UC_UserAll
+  }
+
+  package "car table" {
+    usecase "Create cars table" as UC_CarCreate
+    usecase "Register car" as UC_CarRegister
+    usecase "Update car" as UC_CarUpdate
+    usecase "Check car existence" as UC_CarExist
+    usecase "Search car by id" as UC_CarById
+    usecase "Search cars by user" as UC_CarByUser
+    usecase "Search cars by conditions" as UC_CarConditions
+  }
+
+  package "booking table" {
+    usecase "Create booking table" as UC_OrderCreate
+    usecase "Create booking" as UC_OrderBook
+    usecase "Update booking" as UC_OrderUpdate
+    usecase "Search bookings" as UC_OrderSearch
+    usecase "Search bookings by where clause" as UC_OrderWhere
+  }
+}
+
+UC_UserCreate .> UC_NonQuery : <<include>>
+UC_CarCreate .> UC_NonQuery : <<include>>
+UC_OrderCreate .> UC_NonQuery : <<include>>
+UC_UserInsert .> UC_NonQuery : <<include>>
+UC_UserUpdate .> UC_NonQuery : <<include>>
+UC_CarRegister .> UC_NonQuery : <<include>>
+UC_CarUpdate .> UC_NonQuery : <<include>>
+UC_OrderBook .> UC_NonQuery : <<include>>
+UC_OrderUpdate .> UC_NonQuery : <<include>>
+
+UC_UserById .> UC_Query : <<include>>
+UC_UserByEmail .> UC_Query : <<include>>
+UC_UserLogin .> UC_Query : <<include>>
+UC_UserAll .> UC_Query : <<include>>
+UC_CarExist .> UC_Query : <<include>>
+UC_CarById .> UC_Query : <<include>>
+UC_CarByUser .> UC_Query : <<include>>
+UC_CarConditions .> UC_Query : <<include>>
+UC_OrderSearch .> UC_Query : <<include>>
+UC_OrderWhere .> UC_Query : <<include>>
+
+UC_NonQuery .> UC_Commit : <<include>>
+UC_NonQuery .> UC_Rollback : <<extend>>
+UC_Open .> UC_Close : lifecycle
+@enduml

@@ -1,0 +1,71 @@
+@startuml
+' Interactions between classes defined inside server/db only.
+skinparam shadowing false
+autonumber
+
+participant DBHelper as Helper
+participant SQLiteDatabase as SQLite
+participant Database
+participant UserTable as Users
+participant CarTable as Cars
+participant OrderTable as Orders
+
+== Database helper initialization ==
+Helper -> Helper: __new__()
+Helper -> SQLite: __init__()
+SQLite -> Database: __init__()
+Database -> SQLite: _open_db_()
+SQLite --> Database: connection opened
+Database --> SQLite: initialized
+SQLite --> Helper: database instance
+
+== User table operation ==
+Users -> Helper: execute_non_query(CREATE TABLE)
+Helper -> SQLite: execute_non_query(query, params)
+SQLite --> Helper: operation result
+Helper --> Users: result
+Users -> Helper: commit()
+Helper -> SQLite: commit()
+SQLite --> Helper: committed
+Helper --> Users: completed
+Users -> Helper: execute_query(SELECT user)
+Helper -> SQLite: execute_query(query, params)
+SQLite --> Helper: rows
+Helper --> Users: rows
+Users -> Users: _row_to_dict(row)
+
+== Car table operation ==
+Cars -> Helper: execute_non_query(INSERT/UPDATE)
+Helper -> SQLite: execute_non_query(query, params)
+SQLite --> Helper: operation result
+alt operation succeeds
+  Cars -> Helper: commit()
+  Helper -> SQLite: commit()
+else operation fails
+  Cars -> Helper: rollback()
+  Helper -> SQLite: rollback()
+end
+Cars -> Helper: execute_query(SELECT car)
+Helper -> SQLite: execute_query(query, params)
+SQLite --> Helper: rows
+Helper --> Cars: rows
+Cars -> Cars: _row_to_dict(row)
+
+== Booking table operation ==
+Orders -> Helper: execute_non_query(INSERT/UPDATE)
+Helper -> SQLite: execute_non_query(query, params)
+SQLite --> Helper: operation result
+Orders -> Helper: commit()
+Helper -> SQLite: commit()
+Orders -> Helper: execute_query(SELECT booking)
+Helper -> SQLite: execute_query(query, params)
+SQLite --> Helper: rows
+Helper --> Orders: rows
+Orders -> Orders: _row_to_dict(row)
+
+== Database shutdown ==
+Helper -> SQLite: close()
+SQLite -> Database: close()
+Database --> SQLite: closed
+SQLite --> Helper: closed
+@enduml

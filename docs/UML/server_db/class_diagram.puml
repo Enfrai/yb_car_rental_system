@@ -1,0 +1,136 @@
+@startuml
+' Class structure for definitions inside server/db only.
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide empty members
+
+package "server.db.database" {
+  abstract class Database {
+    {static} db_file: str
+    +__init__(db_file: str = None)
+    #_open_db_()
+    +execute_query(query: str, params: tuple = None): list
+    +execute_non_query(query: str, params: tuple = None)
+    +rollback()
+    +commit()
+    +close()
+  }
+
+  class SQLiteDatabase {
+    +connection
+    #_open_db_()
+    +execute_query(query: str, params: tuple): list
+    +execute_non_query(query: str, params: tuple)
+    +rollback()
+    +commit()
+    +close()
+  }
+
+  class DBHelper <<singleton>> {
+    {static} _instance
+    {static} _lock
+    -_db: Database
+    +__new__(...)
+    +execute_query(query: str, params: tuple = None): list
+    +execute_non_query(query: str, params: tuple = None): int
+    +commit()
+    +close()
+  }
+}
+
+package "server.db.table_user" {
+  enum UserColumns {
+    ID
+    USERNAME
+    PASSWORD
+    EMAIL
+    IS_ADMIN
+    IS_CUSTOMER
+  }
+  class UserTable {
+    +__init__()
+    -_row_to_dict(row): dict
+    +update(user_id, username, email, password, is_admin, is_customer): bool
+    +insert(username, email, password, is_admin, is_customer): bool
+    +exist(email = None, user_id = None): bool
+    +search_by_id(user_id): dict
+    +search_all_users(is_admin = False, is_customer = False): list
+    +search_by_email(email): dict
+    +search_by_email_and_password(email, password): dict
+  }
+}
+
+package "server.db.table_car" {
+  enum CarColumns {
+    ID
+    USER_ID
+    MAKE
+    MODEL
+    YEAR
+    MILEAGE
+    REGISTER
+    STATUS
+    MIN_RENT_PERIOD
+    MAX_RENT_PERIOD
+  }
+  enum CarStatus {
+    VALID
+    IN_RENT
+    PENDDING
+    INVALID
+  }
+  class CarTable {
+    +__init__()
+    -_row_to_dict(row): dict
+    +update(car_id, car: dict): bool
+    +register(car: dict): bool
+    +exist(car_id): bool
+    +search(car_id): dict
+    +search_for_users(user_id, order): list
+    +search_with_coditions(con, limit): list
+  }
+}
+
+package "server.db.table_booking" {
+  enum BookingStatus {
+    RESERVED
+    PENDDING
+    APPROVED
+    REJECTED
+    COMPLETED
+    CANCELLED
+  }
+  enum BookingColumns {
+    ID
+    UID
+    CUSTOMER_ID
+    ADMIN_ID
+    CAR_ID
+    START_DATE
+    END_DATE
+    TOTAL_FEE
+    STATUS
+    CREATE_TIME
+  }
+  class OrderTable {
+    +__init__()
+    -_row_to_dict(row): dict
+    +update(book_id, info: dict): bool
+    +book(info: dict): bool
+    +search(customer_id, admin_id, order_id, order_status, extras, limit, order_by): list
+    +search_where_clause(customer_id, admin_id, order_by, extras, where, where_values): list
+  }
+}
+
+Database <|-- SQLiteDatabase
+DBHelper o-- Database
+DBHelper ..> SQLiteDatabase : creates
+UserTable ..> DBHelper : db_helper
+CarTable ..> DBHelper : db_helper
+OrderTable ..> DBHelper : db_helper
+UserTable ..> UserColumns
+CarTable ..> CarColumns
+CarTable ..> CarStatus
+OrderTable ..> BookingColumns
+OrderTable ..> BookingStatus
+@enduml

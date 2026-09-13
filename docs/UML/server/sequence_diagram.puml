@@ -1,0 +1,123 @@
+@startuml
+' Overall server business flows: database internals are intentionally abstracted.
+skinparam shadowing false
+autonumber
+
+actor Customer
+actor Administrator as Admin
+participant "Web Client" as Client
+participant "FastAPI Server" as API
+participant "UserController" as UserController
+participant "CarController" as CarController
+participant "BookingController" as BookingController
+participant "User Model" as UserModel
+participant "Car Model" as CarModel
+participant "Booking Model" as BookingModel
+participant "Database Layer" as Database
+participant "NotificationCenter" as Notifications
+
+== Server startup ==
+API -> Notifications: register database lifecycle listeners
+API -> Database: initialize persistence
+Database --> API: ready
+
+== User registration and login ==
+Customer -> Client: submit registration
+Client -> API: POST /user/register
+API -> UserController: register(request)
+UserController -> UserModel: check existing user
+UserModel -> Database: query user data
+Database --> UserModel: result
+alt valid new user
+  UserController -> UserModel: register(user information)
+  UserModel -> Database: persist user
+  Database --> UserModel: success
+  alt auto_login enabled
+    UserController -> UserController: login(request)
+    UserController -> UserModel: login(email, password)
+    UserModel -> Database: verify credentials
+    Database --> UserModel: user and role
+    UserModel --> UserController: authenticated user
+  end
+else duplicate or invalid user
+  UserController --> API: registration error
+end
+UserController --> API: response data
+API --> Client: registration/login response
+Client --> Customer: show result
+
+== Car search and registration ==
+Customer -> Client: search cars
+Client -> API: POST /car/search
+API -> CarController: search(request)
+CarController -> CarModel: search with conditions
+CarModel -> Database: query car data
+Database --> CarModel: matching cars
+CarModel --> CarController: car list
+CarController --> API: car response
+API --> Client: search results
+
+Admin -> Client: register car
+Client -> API: POST /car/register
+API -> CarController: register(request)
+CarController -> CarModel: register(car information)
+CarModel -> Database: persist car
+Database --> CarModel: success
+CarController -> CarModel: search registered car
+CarModel -> Database: query car data
+Database --> CarModel: car information
+CarModel --> CarController: registered car
+CarController --> API: registration response
+API --> Client: result
+
+== Booking and confirmation ==
+Customer -> Client: book a car
+Client -> API: POST /order/book
+API -> BookingController: book_a_car(request)
+BookingController -> BookingModel: check existing orders
+BookingModel -> Database: query customer bookings
+Database --> BookingModel: booking list
+alt booking allowed
+  opt administrator not specified
+    BookingController -> Database: find an administrator
+    Database --> BookingController: administrator
+  end
+  BookingController -> BookingModel: create booking
+  BookingModel -> Database: persist order
+  Database --> BookingModel: success
+  BookingController -> BookingModel: retrieve created order
+  BookingModel -> Database: query order
+  Database --> BookingModel: order information
+  BookingController -> CarModel: update car status to pending
+  CarModel -> Database: persist car status
+  Database --> CarModel: success
+  BookingController --> API: booking response
+else active booking exists or validation fails
+  BookingController --> API: booking error
+end
+API --> Client: booking result
+Client --> Customer: show result
+
+Admin -> Client: confirm booking
+Client -> API: POST /order/confirm
+API -> BookingController: confirm_order(request)
+BookingController -> Database: update order status and administrator
+Database --> BookingController: success or failure
+BookingController --> API: confirmation response
+API --> Client: result
+
+Customer -> Client: view booking history
+Client -> API: POST /order/all_for_users
+API -> BookingController: search_orders_by_user(request)
+BookingController -> BookingModel: search bookings by user
+BookingModel -> Database: query booking history
+Database --> BookingModel: booking list
+BookingModel --> BookingController: booking list
+BookingController --> API: history response
+API --> Client: booking history
+
+== Server shutdown or failure ==
+API -> Notifications: notify exit or exception
+Notifications -> Database: close persistence connection
+Database --> Notifications: closed
+@enduml

@@ -1,0 +1,25 @@
+@startuml
+' Use cases defined by controllers inside server/service only.
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+rectangle "server/service" {
+  package "controller" {
+    usecase "UserController.register()" as UC_UserRegister
+    usecase "UserController.login()" as UC_UserLogin
+    usecase "UserController.search()" as UC_UserSearch
+    usecase "UserController.update()" as UC_UserUpdate
+    usecase "CarController.register()" as UC_CarRegister
+    usecase "CarController.search()" as UC_CarSearch
+    usecase "BookingController.book_a_car()" as UC_BookCar
+    usecase "BookingController.confirm_order()" as UC_ConfirmOrder
+    usecase "BookingController.search_orders_by_user()" as UC_OrderHistory
+  }
+}
+
+UC_UserRegister .> UC_UserLogin : auto_login
+UC_CarRegister .> UC_CarSearch : retrieve registered car
+UC_BookCar .> UC_OrderHistory : query existing orders
+UC_ConfirmOrder .> UC_OrderHistory : order state
+@enduml

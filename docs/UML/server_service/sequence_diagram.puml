@@ -1,0 +1,66 @@
+@startuml
+' Interactions between classes defined inside server/service only.
+skinparam shadowing false
+autonumber
+
+participant UserController as UC
+participant CarController as CC
+participant BookingController as BC
+participant User
+participant Car
+participant Book
+participant UserInfoData as UID
+participant CarIdData as CID
+participant CarInfoData as CInfo
+participant BookInfoData as BInfo
+
+== User registration and login ==
+UC -> User: search_by_email_or_id(email)
+User --> UC: result
+UC -> User: register(username, password, email, role)
+User --> UC: result
+opt auto_login
+  UC -> UC: login(request)
+  UC -> User: login(email, password)
+  User --> UC: result
+  UC -> UID: build(user_id, username, email, roles)
+end
+
+== User search and update ==
+UC -> User: search_by_email_or_id(user_id)
+User --> UC: result
+UC -> UID: build(user fields)
+UC -> User: update(user_id)
+User --> UC: result
+
+== Car registration and search ==
+CC -> Car: register()
+Car --> CC: result
+CC -> Car: search_for_user(user_id, limit)
+Car --> CC: car list
+CC -> CID: create(car_id)
+
+CC -> Car: search_with_conditions()
+Car --> CC: car list
+loop each car
+  CC -> CInfo: create(car fields)
+end
+
+== Booking and order confirmation ==
+BC -> Book: search_by_status(statuses)
+Book --> BC: order list
+opt booking allowed
+  BC -> Book: book_a_car()
+  Book --> BC: result
+  BC -> Book: search_with_conditions()
+  Book --> BC: created order
+  BC -> BInfo: create(order fields)
+end
+BC -> Book: search_with_conditions()
+Book --> BC: order list
+loop each order
+  BC -> BInfo: create(order fields)
+end
+BC -> Book: update order state
+Book --> BC: result
+@enduml

@@ -1,0 +1,143 @@
+@startuml
+' Class structure for definitions inside server/service only.
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide empty members
+
+package "service.controller" {
+  class UserController {
+    +register(req: UserRegisterRequest)
+    +login(req: UserLoginRequest)
+    +search(req: UserSearchRequest)
+    +update(req: UserUpdateRequest)
+  }
+  class CarController {
+    +register(req: CarRegisterRequest)
+    +search(req: CarSearchReuest)
+  }
+  class BookingController {
+    +book_a_car(req: BookingCarRequest)
+    +confirm_order(req: BookingConfirmRequest)
+    +search_orders_by_user(req: BookingHistoryRequest)
+  }
+  class UserLoginRequest <<request>> {
+    +email: str
+    +password: str
+  }
+  class UserRegisterRequest <<request>> {
+    +username: str
+    +role: str
+    +auto_login: bool
+  }
+  class UserUpdateRequest <<request>> {
+    +user_id: str
+  }
+  class UserSearchRequest <<request>> {
+    +user_id: int
+  }
+  class CarRegisterRequest <<request>> {
+    +user_id: str
+    +make: str
+    +model: str
+    +year: int
+    +mileage: int
+    +rent_status: str
+    +min_rent_period: int
+    +max_rent_period: int
+  }
+  class CarSearchReuest <<request>>
+  class BookingCarRequest <<request>>
+  class BookingHistoryRequest <<request>>
+  class BookingConfirmRequest <<request>>
+}
+
+package "service.model" {
+  class User {
+    +user_id: int
+    +username: str
+    +password: str
+    +email: str
+    +role: int
+    +register(...)
+    +login(email, password)
+    +search_by_email_or_id(...)
+    +update(user_id)
+    +is_valid()
+  }
+  class Car {
+    +car_id: int
+    +user_id: int
+    +make: str
+    +model: str
+    +year: int
+    +mileage: int
+    +rent_status: int
+    +min_rent_period: int
+    +max_rent_period: int
+    +register()
+    +search_with_conditions()
+    +search_for_user(user_id, limit)
+    +search_by_id(car_id)
+  }
+  class Book {
+    +book_id: int
+    +book_uid: int
+    +customer_id: int
+    +admin_id: int
+    +car_id: int
+    +start_date: str
+    +end_date: str
+    +total_fee: int
+    +status: int
+    +book_a_car()
+    +search_with_conditions(...)
+    +search_by_status(...)
+    +where_status_in(...)
+  }
+  enum Role {
+    ADMIN
+    CUSTOMER
+  }
+  class OnDBExitNotification {
+    +onNotify(...)
+  }
+  class OnDBExceptionNotification {
+    +onNotify(...)
+  }
+}
+
+package "service.view" {
+  class UserInfoData {
+    +user_id: str
+    +username: str
+    +email: str
+    +is_admin: bool
+    +is_customer: bool
+    +build(...)
+  }
+  class CarIdData
+  class CarInfoData
+  class CarInfoList
+  class BookIdData
+  class BookInfoData
+  class BookInfoList
+}
+
+UserController ..> UserLoginRequest
+UserController ..> UserRegisterRequest
+UserController ..> UserUpdateRequest
+UserController ..> UserSearchRequest
+CarController ..> CarRegisterRequest
+CarController ..> CarSearchReuest
+BookingController ..> BookingCarRequest
+BookingController ..> BookingHistoryRequest
+BookingController ..> BookingConfirmRequest
+UserController --> User
+CarController --> Car
+BookingController --> Book
+UserController ..> UserInfoData
+CarController ..> CarIdData
+CarController ..> CarInfoData
+BookingController ..> BookInfoData
+User ..> Role
+@enduml
